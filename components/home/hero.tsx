@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Button } from "../ui/button";
 
 const Hero = () => {
   return (
@@ -49,33 +50,24 @@ const Hero = () => {
           *Limited time offer - Use code:{" "}
           <span className="text-orange-400 font-bold">GOLDEN25</span>
         </p>
-      </div>
-
-      {/* <div className="max-w-3xl mx-auto z-40 relative text-center py-32 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-8xl font-bold mb-4 text-white">
-          Sunny food.{" "}
-          <span className="text-yellow-600 block">Golden mood.</span>
-        </h1>
-        <p className="text-lg text-white mb-10">
-          Wholesome Mediterranean meals made fresh daily — bright flavors, bold
-          colors, and natural goodness in every bite.
-        </p>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <a
-            href="#fresh"
-            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-200 shadow-md"
+        <div className="flex flex-col sm:flex-row gap-6 justify-center mt-16">
+          <Button
+            variant="destructive"
+            size="lg"
+            className="text-xl px-10 py-5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow-2xl hover:scale-105 transition-all duration-300 border-0"
           >
-            ⚡ Fresh Ingredients Daily
-          </a>
-          <a
-            href="#menu"
-            className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-200 shadow-md"
+            Make Reservation
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="text-xl px-10 py-4 border-2 border-white text-white hover:bg-white hover:text-black font-bold rounded-lg shadow-2xl hover:scale-105 transition-all duration-300"
           >
-            🍽️ Authentic Mediterranean Flavors
-          </a>
+            Order Online
+          </Button>
         </div>
-      </div> */}
+      </div>
     </section>
   );
 };
