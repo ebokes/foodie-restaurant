@@ -54,7 +54,7 @@ const Navbar = () => {
           : "bg-transparent z-50"
       }`}
     >
-      <div className="max-w-[1200px] w-[90%] mx-auto my-4 flex justify-between items-center py-4 ">
+      <div className="max-w-[1200px] w-[90%] mx-auto my-1 flex justify-between items-center py-4 ">
         <div className="">
           <Link href={"/"} className="flex items-center space-x-2 group">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
