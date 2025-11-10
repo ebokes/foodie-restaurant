@@ -19,12 +19,6 @@
   --color-popover-foreground: #4c1d0a;
   --color-muted: #f4f1ed;
   --color-muted-foreground: #8b6f47;
-  /* --color-primary: linear-gradient(
-    160deg,
-    #b94725 0%,
-    #e8753e 60%,
-    #f4c16d 100%
-  ); */
   --color-primary-solid: #b94725;
   --color-primary-foreground: #ffffff;
   --color-secondary: #4c1d0a;
@@ -40,6 +34,8 @@
   --color-destructive: #8b0000;
   --color-destructive-foreground: #ffffff;
   --color-tertiary: #000;
+  --color-grad1: #e8753e;
+  --color-grad2: #f4c16d;
 }
 
 @layer base {

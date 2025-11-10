@@ -80,28 +80,6 @@ const OurMenu = () => {
     },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    },
-  };
-
   // const handleCategoryClick = (category) => {
   //   navigate("/menu-catalog", { state: { selectedCategory: category?.name } });
   // };
@@ -170,7 +148,7 @@ const OurMenu = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
 
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
