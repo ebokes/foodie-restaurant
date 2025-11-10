@@ -75,7 +75,7 @@ const Navbar = () => {
             {navigationItems.map((item) => (
               <Button
                 key={item.path}
-                btnIcon={item.icon}
+                iconName={item.icon}
                 onClick={() => router.push(item.path)}
                 variant={"ghost"}
               >
@@ -115,20 +115,20 @@ const Navbar = () => {
 
         <div className="flex gap-3">
           <Button
-            btnIcon="ShoppingCart"
+            iconName="ShoppingCart"
             onClick={() => router.push("/shopping-cart")}
             variant={"ghost"}
           >
             Cart
           </Button>
           <Button
-            btnIcon="LogIn"
+            iconName="LogIn"
             variant={"outline"}
             onClick={() => router.push("/sign-in")}
           >
             Sign In
           </Button>
-          <Button btnIcon="UserPlus" onClick={() => router.push("/sign-up")}>
+          <Button iconName="UserPlus" onClick={() => router.push("/sign-up")}>
             Sign Up
           </Button>
         </div>

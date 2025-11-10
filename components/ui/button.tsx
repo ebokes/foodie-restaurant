@@ -10,7 +10,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary",
+        primary:
+          "hover:bg-primary/90 hover:text-primary-foreground transition-all duration-200",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -41,27 +43,24 @@ function Button({
   className,
   variant,
   size,
-  // btnIcon may be a lucide icon name (string) or a custom React node
-  btnIcon,
+  iconName,
   asChild = false,
   children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
-    btnIcon?: string | React.ReactNode;
+    iconName?: string | React.ReactNode;
   }) {
   const Comp = asChild ? Slot : "button";
-
-  // If btnIcon is a string, resolve a Lucide icon component by name
   const LucideIcon =
-    typeof btnIcon === "string"
+    typeof iconName === "string"
       ? (
           LucideIcons as unknown as Record<
             string,
             React.ComponentType<LucideProps>
           >
-        )[btnIcon] ?? null
+        )[iconName] ?? null
       : null;
 
   return (
@@ -75,9 +74,9 @@ function Button({
       {...props}
     >
       {/* icon on the left */}
-      {(LucideIcon || (btnIcon && typeof btnIcon !== "string")) && (
+      {(LucideIcon || (iconName && typeof iconName !== "string")) && (
         <span aria-hidden="true" className="inline-flex items-center">
-          {LucideIcon ? <LucideIcon /> : btnIcon}
+          {LucideIcon ? <LucideIcon /> : iconName}
         </span>
       )}
 
