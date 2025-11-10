@@ -50,8 +50,8 @@ const Navbar = () => {
     <header
       className={`${
         navColor
-          ? "bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 border-b border-border shadow-sm sticky top-0 z-50"
-          : "bg-transparent z-50"
+          ? " bg-white sticky top-0 z-50  shadow-lg"
+          : "bg-transparent z-50 backdrop-blur"
       }`}
     >
       <div className="max-w-[1200px] w-[90%] mx-auto my-1 flex justify-between items-center py-4 ">

@@ -121,7 +121,7 @@ const OurMenu = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
-            Explore Our <span className="text-primary">Delicious</span>{" "}
+            Explore Our <span className="text-primary-solid">Delicious</span>{" "}
             Categories
           </h2>
 
@@ -213,7 +213,7 @@ const OurMenu = () => {
         {/* View Full Menu Button */}
         <div className="text-center">
           <Button
-            variant="primary"
+            variant="tertiary"
             size="lg"
             // onClick={handleViewFullMenu}
             iconName="Menu"

@@ -102,7 +102,7 @@ const TestimonialsSection = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
-            What Our <span className="text-primary">Customers</span> Say
+            What Our <span className="text-primary-solid">Customers</span> Say
           </h2>
 
           <p className="text-lg text-muted-foreground font-body max-w-2xl mx-auto">

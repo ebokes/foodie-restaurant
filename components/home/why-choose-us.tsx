@@ -58,7 +58,7 @@ const WhyChooseUsSection = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
-            What Makes Us <span className="text-primary">Special</span>
+            What Makes Us <span className="text-primary-solid">Special</span>
           </h2>
 
           <p className="text-lg text-muted-foreground font-body max-w-2xl mx-auto">

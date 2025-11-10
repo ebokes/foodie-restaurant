@@ -66,7 +66,7 @@ const LimitedOffers = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
-            Special <span className="text-primary">Deals</span> This Week
+            Special <span className="text-primary-solid">Deals</span> This Week
           </h2>
 
           <p className="text-lg text-muted-foreground font-body max-w-2xl mx-auto">
@@ -146,10 +146,10 @@ const LimitedOffers = () => {
 
                 {/* Action Button */}
                 <Button
-                  variant="primary"
+                  variant="tertiary"
                   size="sm"
                   iconName="ArrowRight"
-                  className="w-full hover:border-2"
+                  className="w-full group-hover:bg-linear-to-br from-[#b94725] via-[#e8753e] to-[#f4c16d] group-hover:text-white"
                 >
                   Claim Deal
                 </Button>
