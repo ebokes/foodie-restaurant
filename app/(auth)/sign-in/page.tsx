@@ -107,7 +107,7 @@ const LoginPage = () => {
       <div className="space-y-3">
         <button
           onClick={() => router.push('/')}
-          className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-body font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+          className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-body font-medium bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground hover:bg-primary/90 transition-all duration-200"
         >
           <Icon name="Home" size={16} />
           <span>Continue to Home</span>

@@ -18,7 +18,7 @@ const TestimonialsSection = () => {
       avatarAlt:
         "Professional headshot of smiling woman with brown hair in casual blue shirt",
       rating: 5,
-      text: "Absolutely incredible! The flavors are authentic and the presentation is beautiful. Pesto has become my go-to restaurant for special occasions and casual dining alike.",
+      text: "Absolutely incredible! The flavors are authentic and the presentation is beautiful. Foodies has become my go-to restaurant for special occasions and casual dining alike.",
       date: "2 days ago",
     },
     {
@@ -40,7 +40,7 @@ const TestimonialsSection = () => {
       avatarAlt:
         "Professional headshot of Asian woman with long black hair in white blazer smiling confidently",
       rating: 5,
-      text: "Outstanding quality and service! I order from Pesto for all my business meetings. The food always arrives on time and exceeds expectations. Five stars!",
+      text: "Outstanding quality and service! I order from Foodies for all my business meetings. The food always arrives on time and exceeds expectations. Five stars!",
       date: "3 days ago",
     },
     {
@@ -201,7 +201,7 @@ const TestimonialsSection = () => {
                 onClick={() => goToTestimonial(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentTestimonial
-                    ? "bg-primary scale-125"
+                    ? "bg-linear-to-br from-primary-solid via-grad1 to-grad2 scale-125"
                     : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}

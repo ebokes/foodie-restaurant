@@ -30,7 +30,7 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
           Choose Your Location
         </h2>
         <p className="text-muted-foreground">
-          Select from our six beautiful Pesto restaurant locations
+          Select from our six beautiful Foodies restaurant locations
         </p>
       </div>
 

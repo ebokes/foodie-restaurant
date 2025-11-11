@@ -313,7 +313,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       className="w-8 h-8 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-xs font-bold">
                       {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                     </div>
                   )}
@@ -335,7 +335,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             className="w-10 h-10 rounded-full object-cover border border-border"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                          <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-sm font-bold">
                             {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                           </div>
                         )}
@@ -512,7 +512,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         className="w-12 h-12 rounded-full object-cover border border-border"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+                      <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-lg font-bold">
                         {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                       </div>
                     )}

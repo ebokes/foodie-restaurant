@@ -76,7 +76,7 @@ const WhyChooseUsSection = () => {
             >
               {/* Icon */}
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-linear-to-br from-primary-solid via-grad1 to-grad2 group-hover:scale-110 transition-all duration-300">
                   <Icon
                     name={feature?.icon}
                     size={32}

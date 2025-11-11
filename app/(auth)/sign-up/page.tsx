@@ -244,7 +244,7 @@ const Register = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center">
                 <Icon name="UtensilsCrossed" size={20} color="white" />
               </div>
               <span className="text-lg font-heading font-bold">Foodies Restaurant</span>

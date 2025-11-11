@@ -37,7 +37,7 @@ const EmptyCart = () => {
             size="lg"
             onClick={handleBrowseMenu}
             iconName="UtensilsCrossed"
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="w-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 hover:bg-primary/90 text-primary-foreground"
           >
             Browse Menu
           </Button>

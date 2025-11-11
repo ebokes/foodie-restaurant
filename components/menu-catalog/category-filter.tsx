@@ -39,7 +39,7 @@ const CategoryFilter = ({
             onClick={() => onCategoryChange(category?.id)}
             className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-body font-medium transition-all duration-200 hover:scale-[1.02] ${
               activeCategory === category?.id
-                ? "bg-primary text-primary-foreground shadow-md"
+                ? "bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground shadow-md"
                 : "bg-muted text-foreground hover:bg-primary/10 hover:text-primary border border-transparent hover:border-primary/20"
             }`}
           >

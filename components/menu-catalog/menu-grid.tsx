@@ -164,7 +164,7 @@ const MenuGrid = ({
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => window.location?.reload()}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-body font-medium hover:bg-primary/90 transition-colors duration-200"
+              className="px-6 py-2 bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground rounded-lg font-body font-medium hover:bg-primary/90 transition-colors duration-200"
             >
               Reset Filters
             </button>
@@ -216,7 +216,7 @@ const MenuGrid = ({
         <div className="text-center">
           <button
             onClick={handleLoadMore}
-            className="inline-flex items-center space-x-2 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-body font-medium hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+            className="inline-flex items-center space-x-2 px-8 py-3 bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground rounded-lg font-body font-medium hover:bg-primary/90 transition-all duration-200 hover:scale-105"
           >
             <span>Load More Items</span>
             <Icon name="ChevronDown" size={16} />
