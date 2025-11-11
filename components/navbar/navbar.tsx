@@ -1,357 +1,594 @@
 "use client";
 
-import Icon from "../ui/app-icon";
-import type { IconProps } from "../ui/app-icon";
-import Link from "next/link";
-import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Icon, { type IconProps } from '@/components/ui/app-icon';
+
+interface User {
+  id?: number;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  avatarAlt?: string;
+}
+
+interface NavbarProps {
+  cartCount?: number;
+  user?: User | null;
+  onCartClick?: () => void;
+  onAccountClick?: (action: string) => void;
+  onLogout?: () => void;
+  onSearch?: (query: string) => void;
+}
 
 interface CartItem {
   id: number;
   quantity: number;
 }
 
-const Navbar = () => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  cartCount: propCartCount, 
+  user = null, 
+  onCartClick, 
+  onAccountClick, 
+  onLogout, 
+  onSearch 
+}) => {
   const router = useRouter();
-  const [navColor, setNavColor] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cartCount, setCartCount] = useState(0);
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(propCartCount || 0);
 
+  // Calculate cart count from localStorage if not provided as prop
   useEffect(() => {
-    const changeNavColorOnScroll = () =>
-      window.scrollY >= 7 ? setNavColor(true) : setNavColor(false);
-
-    window.addEventListener("scroll", changeNavColorOnScroll);
-
-    return () => window.removeEventListener("scroll", changeNavColorOnScroll);
-  }, []);
-
-  // Calculate cart count from localStorage
-  useEffect(() => {
-    const calculateCartCount = () => {
-      if (typeof window !== 'undefined') {
-        const savedCart = localStorage.getItem('cartItems');
-        if (savedCart) {
-          try {
-            const cartItems: CartItem[] = JSON.parse(savedCart);
-            const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-            setCartCount(count);
-          } catch (error) {
+    if (propCartCount === undefined) {
+      const calculateCartCount = () => {
+        if (typeof window !== 'undefined') {
+          const savedCart = localStorage.getItem('cartItems');
+          if (savedCart) {
+            try {
+              const cartItems: CartItem[] = JSON.parse(savedCart);
+              const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+              setCartCount(count);
+            } catch (error) {
+              setCartCount(0);
+            }
+          } else {
             setCartCount(0);
           }
-        } else {
-          setCartCount(0);
         }
-      }
-    };
+      };
 
-    calculateCartCount();
-
-    // Listen for storage changes (when cart is updated in other tabs/components)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'cartItems') {
-        calculateCartCount();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    // Also listen for custom events (for same-tab updates)
-    const handleCartUpdate = () => {
       calculateCartCount();
-    };
 
-    window.addEventListener('cartUpdated', handleCartUpdate);
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'cartItems') {
+          calculateCartCount();
+        }
+      };
 
-    // Poll for changes (in case localStorage is updated directly)
-    const interval = setInterval(calculateCartCount, 1000);
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('cartUpdated', calculateCartCount);
+      const interval = setInterval(calculateCartCount, 1000);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-      clearInterval(interval);
-    };
-  }, []);
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('cartUpdated', calculateCartCount);
+        clearInterval(interval);
+      };
+    }
+  }, [propCartCount]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality here
-    console.log("Searching for:", searchQuery);
-    // Close search after submission
-    setIsSearchOpen(false);
-  };
-
-  const navigationItems: {
+  const navigationItems: Array<{
     label: string;
     path: string;
-    icon: IconProps["name"];
-    variant: "default" | "ghost" | "outline";
-  }[] = [
-    {
-      label: "Home",
-      path: "/",
-      icon: "Home" as IconProps["name"],
-      variant: "ghost",
-    },
-    {
-      label: "Menu",
-      path: "/menu-catalog",
-      icon: "UtensilsCrossed" as IconProps["name"],
-      variant: "ghost",
-    },
-    {
-      label: "Reservations",
-      path: "/table-reservation",
-      icon: "Calendar" as IconProps["name"],
-      variant: "ghost",
-    },
+    icon: IconProps['name'];
+  }> = [
+    { label: 'Home', path: '/', icon: 'Home' },
+    { label: 'Menu', path: '/menu-catalog', icon: 'UtensilsCrossed' },
+    { label: 'Reservations', path: '/table-reservation', icon: 'Calendar' },
   ];
 
+  const isActivePath = (path: string): boolean => {
+    return pathname === path;
+  };
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleCartClick = () => {
+    if (onCartClick) {
+      onCartClick();
+    } else {
+      router.push('/shopping-cart');
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleSignIn = () => {
+    if (onAccountClick) {
+      onAccountClick('login');
+    } else {
+      router.push('/sign-in');
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleSignUp = () => {
+    if (onAccountClick) {
+      onAccountClick('register');
+    } else {
+      router.push('/sign-up');
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleUserProfileClick = () => {
+    if (onAccountClick) {
+      onAccountClick('account');
+    } else {
+      router.push('/user-account');
+    }
+    setIsUserDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsUserDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/menu-catalog?search=${encodeURIComponent(searchQuery.trim())}`);
+      if (onSearch) {
+        onSearch(searchQuery.trim());
+      }
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    if (onSearch) {
+      onSearch('');
+    }
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    if (!isMobileMenuOpen && !isUserDropdownOpen) {
+      return; // Don't set up listeners if nothing is open
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Don't close if clicking on mobile menu button or inside mobile menu
+      const isClickOnMenuButton = target.closest('.mobile-menu-button') !== null;
+      const isClickInsideMenu = target.closest('.mobile-menu') !== null;
+      
+      if (isMobileMenuOpen && !isClickOnMenuButton && !isClickInsideMenu) {
+        setIsMobileMenuOpen(false);
+      }
+      
+      // Don't close if clicking on user profile button or inside user dropdown
+      const isClickOnUserButton = target.closest('.user-profile-button') !== null;
+      const isClickInsideUserDropdown = target.closest('.user-dropdown') !== null;
+      
+      if (isUserDropdownOpen && !isClickOnUserButton && !isClickInsideUserDropdown) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+
+    // Use a small timeout to avoid conflicts with button onClick
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isMobileMenuOpen, isUserDropdownOpen]);
+
   return (
-    <header
-      className={`${
-        navColor
-          ? " bg-white sticky top-0 z-50 shadow-lg"
-          : "z-50 backdrop-blur"
-      }`}
-    >
-      <div className="max-w-[1200px] w-[90%] mx-auto my-1 flex justify-between items-center py-4 ">
-        <div className="">
-          <Link href={"/"} className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <Icon name="Salad" size={24} color="white" className="" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-heading font-bold text-primary">
-                Foodies
-              </h1>
-              <p className="text-xs font-caption text-muted-foreground -mt-1">
-                Restaurant
-              </p>
-            </div>
-          </Link>
-        </div>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-warm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="shrink-0">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 group"
+            >
+              <div className="w-10 h-10 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <Icon name="Salad" size={24} color="white" />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-heading font-bold text-primary">Foodies</h1>
+                <p className="text-xs font-caption text-muted-foreground -mt-1">Restaurant</p>
+              </div>
+            </Link>
+          </div>
 
-        {/* Mobile Icons - Cart and Search */}
-        <div className="lg:hidden flex items-center gap-3">
-          {/* Search Icon */}
-          <button
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="p-2 rounded-full hover:bg-accent transition-colors"
-          >
-            <Icon name="Search" size={20} className="text-foreground" />
-          </button>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {navigationItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => handleNavigation(item.path)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all duration-200 hover:bg-muted hover:scale-102 cursor-pointer ${
+                  isActivePath(item.path)
+                    ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary'
+                }`}
+              >
+                <Icon name={item.icon} size={18} />
+                <span>{item.label}</span>
+              </button>
+            ))}
 
-          {/* Cart Icon */}
-          <button
-            onClick={() => router.push("/shopping-cart")}
-            className="p-2 rounded-full hover:bg-accent transition-colors relative"
-          >
-            <Icon name="ShoppingCart" size={20} className="text-foreground" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                {cartCount > 99 ? '99+' : cartCount}
-              </span>
+            {/* Search Filter */}
+            <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <div className={`relative flex items-center transition-all duration-200 ${
+                  isSearchFocused ? 'scale-102' : ''
+                }`}>
+                  <Icon 
+                    name="Search" 
+                    size={16} 
+                    className="absolute left-3 text-muted-foreground pointer-events-none" 
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    placeholder="Search menu..."
+                    className="w-48 pl-10 pr-10 py-2 text-sm font-body bg-muted border border-transparent rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all duration-200"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </nav>
+
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Cart Button */}
+            <button
+              onClick={handleCartClick}
+              className={`relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all duration-200 hover:bg-muted hover:scale-102 cursor-pointer ${
+                isActivePath('/shopping-cart')
+                  ? 'text-primary bg-primary/10' :'text-foreground hover:text-primary'
+              }`}
+            >
+              <Icon name="ShoppingCart" size={18} />
+              <span>Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-scale-in">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Conditional Rendering: User Profile or Auth Buttons */}
+            {user ? (
+              /* User Profile Section */
+              (<div className="relative">
+                <button
+                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                  className="user-profile-button flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                >
+                  {user?.avatar ? (
+                    <img
+                      src={user?.avatar}
+                      alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
+                      className="w-8 h-8 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className={`transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {/* User Dropdown Menu */}
+                {isUserDropdownOpen && (
+                  <div className="user-dropdown absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-lg shadow-warm-lg overflow-hidden z-50">
+                    <div className="p-3 border-b border-border">
+                      <div className="flex items-center space-x-3">
+                        {user?.avatar ? (
+                          <img
+                            src={user?.avatar}
+                            alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
+                            className="w-10 h-10 rounded-full object-cover border border-border"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                            {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{user?.name || 'User'}</p>
+                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="py-2">
+                      <button
+                        onClick={handleUserProfileClick}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors duration-200"
+                      >
+                        <Icon name="User" size={16} />
+                        <span>My Account</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push('/order-tracking');
+                          setIsUserDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors duration-200"
+                      >
+                        <Icon name="Package" size={16} />
+                        <span>Order Tracking</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push('/table-reservation');
+                          setIsUserDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors duration-200"
+                      >
+                        <Icon name="Calendar" size={16} />
+                        <span>My Reservations</span>
+                      </button>
+                      <hr className="my-2 border-border" />
+                      <button
+                        onClick={handleLogoutClick}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-sm font-body text-error hover:bg-error/10 transition-colors duration-200"
+                      >
+                        <Icon name="LogOut" size={16} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>)
+            ) : (
+              /* Authentication Buttons */
+              (<>
+                <button
+                  onClick={handleSignIn}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-body font-medium text-foreground hover:text-primary hover:bg-muted border border-border transition-all duration-200 cursor-pointer"
+                >
+                  <Icon name="LogIn" size={16} />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  onClick={handleSignUp}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-body font-medium bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground hover:bg-primary/90 transition-all duration-200 cursor-pointer"
+                >
+                  <Icon name="UserPlus" size={16} />
+                  <span>Sign Up</span>
+                </button>
+              </>)
             )}
-          </button>
+          </div>
 
-          {/* Hamburger Menu */}
-          <button
-            className="lg:hidden flex flex-col justify-center items-center gap-1 ml-2 z-70 cursor-pointer"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <span
-              className={`bg-foreground block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
-                isMenuOpen ? "rotate-45 translate-y-1" : "-translate-y-0.5"
-              }`}
-            ></span>
-            <span
-              className={`bg-foreground block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
-                isMenuOpen ? "opacity-0" : "opacity-100"
-              }`}
-            ></span>
-            <span
-              className={`bg-foreground block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
-                isMenuOpen ? "-rotate-45 -translate-y-1" : "translate-y-0.5"
-              }`}
-            ></span>
-          </button>
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-3">
+            {/* Mobile Search Icon */}
+            <button
+              onClick={() => router.push('/menu-catalog')}
+              className="p-2 rounded-lg text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+            >
+              <Icon name="Search" size={20} />
+            </button>
+
+            {/* Mobile Cart Icon */}
+            <button
+              onClick={handleCartClick}
+              className="relative p-2 rounded-lg text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+            >
+              <Icon name="ShoppingCart" size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-scale-in">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+              }}
+              className="mobile-menu-button p-2 rounded-lg text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+            >
+              <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={20} />
+            </button>
+          </div>
         </div>
-
-        {/* Mobile Search Bar - Appears when search is open */}
-        {isSearchOpen && (
-          <div className="lg:hidden absolute top-full left-0 w-full bg-background border-b border-border p-4 z-50">
+      </div>
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-16 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+      {/* Mobile Menu Drawer */}
+      <div className={`mobile-menu fixed top-16 right-0 h-full w-80 max-w-[90vw] bg-card border-l border-border shadow-warm-xl z-50 transform transition-transform duration-300 md:hidden ${
+        isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="p-6">
+          {/* Mobile Search */}
+          <div className="mb-6">
             <form onSubmit={handleSearchSubmit} className="relative">
               <div className="relative flex items-center">
-                <Icon
-                  name="Search"
-                  size={16}
-                  className="absolute left-3 text-muted-foreground pointer-events-none"
+                <Icon 
+                  name="Search" 
+                  size={18} 
+                  className="absolute left-3 text-muted-foreground pointer-events-none" 
                 />
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   placeholder="Search menu..."
-                  className="w-full pl-10 pr-10 py-2 text-sm font-body bg-muted border border-transparent rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all duration-200"
-                  autoFocus
+                  className="w-full pl-10 pr-10 py-3 text-sm font-body bg-muted border border-transparent rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all duration-200"
                 />
-                <button
-                  type="button"
-                  onClick={() => setIsSearchOpen(false)}
-                  className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
-                >
-                  <Icon name="X" size={16} />
-                </button>
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  >
+                    <Icon name="X" size={16} />
+                  </button>
+                )}
               </div>
             </form>
           </div>
-        )}
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex">
-          <div className="flex justify-between gap-3">
+          {/* Mobile Navigation Items */}
+          <nav className="space-y-2">
             {navigationItems.map((item) => (
-              <Button
+              <button
                 key={item.path}
-                iconName={item.icon}
-                onClick={() => router.push(item.path)}
-                variant={"ghost"}
+                onClick={() => handleNavigation(item.path)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium transition-all duration-200 hover:bg-muted ${
+                  isActivePath(item.path)
+                    ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary'
+                }`}
               >
+                <Icon name={item.icon} size={20} />
                 <span>{item.label}</span>
-              </Button>
-            ))}
-            {/* Search bar */}
-            <div className="relative">
-              <form className="relative">
-                <div
-                  className={`relative flex items-center transition-all duration-200`}
-                >
-                  <Icon
-                    name="Search"
-                    size={16}
-                    className="absolute left-3 text-muted-foreground pointer-events-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search menu..."
-                    className="w-48 pl-10 pr-10 py-2 text-sm font-body bg-muted border border-transparent rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all duration-200"
-                  />
-                </div>
-              </form>
-            </div>
-          </div>
-        </nav>
-
-        {/* Desktop Action Buttons */}
-        <div className="hidden lg:flex gap-3">
-          <Button
-            iconName="ShoppingCart"
-            onClick={() => router.push("/shopping-cart")}
-            variant={"ghost"}
-            className="relative"
-          >
-            Cart
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                {cartCount > 99 ? '99+' : cartCount}
-              </span>
-            )}
-          </Button>
-          <Button
-            iconName="LogIn"
-            variant={"outline"}
-            onClick={() => router.push("/sign-in")}
-          >
-            Sign In
-          </Button>
-          <Button iconName="UserPlus" onClick={() => router.push("/sign-up")}>
-            Sign Up
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`fixed top-0 left-0 w-full h-screen bg-background z-60 transition-all duration-300 ease-in-out transform ${
-          isMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex flex-col items-center justify-center h-full gap-8">
-          <Link href={"/"} className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center">
-              <Icon name="Salad" size={32} color="white" className="" />
-            </div>
-            <h1 className="text-2xl font-heading font-bold text-primary mt-2">
-              Foodies
-            </h1>
-            <p className="text-sm font-caption text-muted-foreground">
-              Restaurant
-            </p>
-          </Link>
-
-          <nav className="flex flex-col items-center gap-6 w-full">
-            {navigationItems.map((item) => (
-              <Button
-                key={item.path}
-                iconName={item.icon}
-                onClick={() => {
-                  router.push(item.path);
-                  setIsMenuOpen(false);
-                }}
-                variant={"ghost"}
-                className="text-xl py-3 w-64 justify-center"
-                size="lg"
-              >
-                <span>{item.label}</span>
-              </Button>
+              </button>
             ))}
           </nav>
 
-          <div className="flex flex-col gap-4 w-64 mt-8">
-            <Button
-              iconName="ShoppingCart"
-              onClick={() => {
-                router.push("/shopping-cart");
-                setIsMenuOpen(false);
-              }}
-              variant={"ghost"}
-              className="text-xl py-3 justify-center relative"
-              size="lg"
-            >
-              Cart
-              {cartCount > 0 && (
-                <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
-            </Button>
-            <Button
-              iconName="LogIn"
-              variant={"outline"}
-              onClick={() => {
-                router.push("/sign-in");
-                setIsMenuOpen(false);
-              }}
-              className="text-xl py-3 justify-center"
-              size="lg"
-            >
-              Sign In
-            </Button>
-            <Button
-              iconName="UserPlus"
-              onClick={() => {
-                router.push("/sign-up");
-                setIsMenuOpen(false);
-              }}
-              className="text-xl py-3 justify-center"
-              size="lg"
-            >
-              Sign Up
-            </Button>
+          {/* Mobile Auth/User Section */}
+          <div className="mt-8 pt-6 border-t border-border">
+            {user ? (
+              /* Mobile User Profile Section */
+              (<>
+                <h3 className="text-sm font-body font-medium text-muted-foreground mb-3">Account</h3>
+                <div className="mb-4 p-4 bg-muted rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {user?.avatar ? (
+                      <img
+                        src={user?.avatar}
+                        alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
+                        className="w-12 h-12 rounded-full object-cover border border-border"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+                        {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{user?.name || 'User'}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <button
+                    onClick={handleUserProfileClick}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                  >
+                    <Icon name="User" size={20} />
+                    <span>My Account</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push('/order-tracking');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                  >
+                    <Icon name="Package" size={20} />
+                    <span>Order Tracking</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push('/table-reservation');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                  >
+                    <Icon name="Calendar" size={20} />
+                    <span>My Reservations</span>
+                  </button>
+                  <button
+                    onClick={handleLogoutClick}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-error hover:bg-error/10 transition-all duration-200"
+                  >
+                    <Icon name="LogOut" size={20} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </>)
+            ) : (
+              /* Mobile Auth Buttons */
+              (<>
+                <h3 className="text-sm font-body font-medium text-muted-foreground mb-3">Account</h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={handleSignIn}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                  >
+                    <Icon name="LogIn" size={20} />
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    onClick={handleSignUp}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+                  >
+                    <Icon name="UserPlus" size={20} />
+                    <span>Sign Up</span>
+                  </button>
+                </div>
+              </>)
+            )}
+          </div>
+
+          {/* Contact Info */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <div className="flex items-center space-x-3 text-sm font-body text-muted-foreground">
+              <Icon name="Phone" size={16} />
+              <span>Call us: (555) 123-4567</span>
+            </div>
           </div>
         </div>
       </div>
