@@ -7,12 +7,18 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface CartItem {
+  id: number;
+  quantity: number;
+}
+
 const Navbar = () => {
   const router = useRouter();
   const [navColor, setNavColor] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const changeNavColorOnScroll = () =>
@@ -21,6 +27,53 @@ const Navbar = () => {
     window.addEventListener("scroll", changeNavColorOnScroll);
 
     return () => window.removeEventListener("scroll", changeNavColorOnScroll);
+  }, []);
+
+  // Calculate cart count from localStorage
+  useEffect(() => {
+    const calculateCartCount = () => {
+      if (typeof window !== 'undefined') {
+        const savedCart = localStorage.getItem('cartItems');
+        if (savedCart) {
+          try {
+            const cartItems: CartItem[] = JSON.parse(savedCart);
+            const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+            setCartCount(count);
+          } catch (error) {
+            setCartCount(0);
+          }
+        } else {
+          setCartCount(0);
+        }
+      }
+    };
+
+    calculateCartCount();
+
+    // Listen for storage changes (when cart is updated in other tabs/components)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cartItems') {
+        calculateCartCount();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also listen for custom events (for same-tab updates)
+    const handleCartUpdate = () => {
+      calculateCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    // Poll for changes (in case localStorage is updated directly)
+    const interval = setInterval(calculateCartCount, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -95,9 +148,14 @@ const Navbar = () => {
           {/* Cart Icon */}
           <button
             onClick={() => router.push("/shopping-cart")}
-            className="p-2 rounded-full hover:bg-accent transition-colors"
+            className="p-2 rounded-full hover:bg-accent transition-colors relative"
           >
             <Icon name="ShoppingCart" size={20} className="text-foreground" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </button>
 
           {/* Hamburger Menu */}
@@ -194,8 +252,14 @@ const Navbar = () => {
             iconName="ShoppingCart"
             onClick={() => router.push("/shopping-cart")}
             variant={"ghost"}
+            className="relative"
           >
             Cart
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Button>
           <Button
             iconName="LogIn"
@@ -255,10 +319,15 @@ const Navbar = () => {
                 setIsMenuOpen(false);
               }}
               variant={"ghost"}
-              className="text-xl py-3 justify-center"
+              className="text-xl py-3 justify-center relative"
               size="lg"
             >
               Cart
+              {cartCount > 0 && (
+                <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Button>
             <Button
               iconName="LogIn"
