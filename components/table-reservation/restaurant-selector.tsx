@@ -70,7 +70,7 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
                   <Icon
                     name="MapPin"
                     size={16}
-                    className="text-muted-foreground mt-0.5 flex-shrink-0"
+                    className="text-muted-foreground mt-0.5 shrink-0"
                   />
                   <p className="text-sm text-muted-foreground">
                     {restaurant?.address}
@@ -81,7 +81,7 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
                   <Icon
                     name="Clock"
                     size={16}
-                    className="text-muted-foreground flex-shrink-0"
+                    className="text-muted-foreground shrink-0"
                   />
                   <p className="text-sm text-muted-foreground">
                     {restaurant?.hours}
@@ -92,7 +92,7 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
                   <Icon
                     name="Phone"
                     size={16}
-                    className="text-muted-foreground flex-shrink-0"
+                    className="text-muted-foreground shrink-0"
                   />
                   <p className="text-sm text-muted-foreground">
                     {restaurant?.phone}
@@ -127,7 +127,7 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
       {/* Additional Info */}
       <div className="mt-8 p-6 bg-muted rounded-xl">
         <div className="flex items-start space-x-3">
-          <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shrink-0">
             <Icon name="Info" size={20} color="#4C1D0A" />
           </div>
           <div>

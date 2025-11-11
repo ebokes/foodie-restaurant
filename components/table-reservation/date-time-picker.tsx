@@ -155,7 +155,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
               >
                 <Icon name="Minus" size={16} />
               </button>
-              <span className="text-lg font-body font-medium text-foreground min-w-[3rem] text-center">
+              <span className="text-lg font-body font-medium text-foreground min-w-12 text-center">
                 {guestCount}
               </span>
               <button

@@ -171,7 +171,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             <Icon
               name="MapPin"
               size={16}
-              className="text-muted-foreground flex-shrink-0"
+              className="text-muted-foreground shrink-0"
             />
             <div>
               <div className="font-medium text-foreground">
@@ -187,7 +187,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             <Icon
               name="Calendar"
               size={16}
-              className="text-muted-foreground flex-shrink-0"
+              className="text-muted-foreground shrink-0"
             />
             <div>
               <div className="font-medium text-foreground">
@@ -201,7 +201,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             <Icon
               name="Clock"
               size={16}
-              className="text-muted-foreground flex-shrink-0"
+              className="text-muted-foreground shrink-0"
             />
             <div>
               <div className="font-medium text-foreground">{time}</div>
@@ -213,7 +213,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             <Icon
               name="Users"
               size={16}
-              className="text-muted-foreground flex-shrink-0"
+              className="text-muted-foreground shrink-0"
             />
             <div>
               <div className="font-medium text-foreground">
@@ -361,7 +361,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             <Icon
               name="Info"
               size={16}
-              className="text-muted-foreground flex-shrink-0 mt-0.5"
+              className="text-muted-foreground shrink-0 mt-0.5"
             />
             <div className="text-sm text-muted-foreground">
               <p className="mb-2">
