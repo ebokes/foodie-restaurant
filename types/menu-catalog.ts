@@ -16,3 +16,17 @@ export interface MenuItem {
   prepTime: number;
   createdAt: string;
 }
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: keyof typeof import("lucide-react");
+  count: number;
+  featured: boolean;
+}
+
+export interface Filters {
+  dietary: string;
+  priceRange: string;
+  sortBy: string;
+}

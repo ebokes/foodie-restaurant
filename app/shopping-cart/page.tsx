@@ -75,18 +75,37 @@ const ShoppingCart = () => {
     'WELCOME15': { code: 'WELCOME15', discount: 0.15, description: '15% off welcome offer', minOrder: 15 }
   };
 
-  useEffect(() => {
-    // Load cart items from localStorage or use mock data
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const isInternalUpdateRef = React.useRef(false);
+
+  const loadCartItems = () => {
+    if (typeof window === 'undefined') return;
+    
     const savedCart = localStorage.getItem('cartItems');
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart);
+        // Only set cart items if we actually have items
+        if (parsedCart && parsedCart.length > 0) {
+          isInternalUpdateRef.current = true;
+          setCartItems(parsedCart);
+        } else {
+          isInternalUpdateRef.current = true;
+          setCartItems([]);
+        }
       } catch (error) {
-        setCartItems(mockCartItems);
+        isInternalUpdateRef.current = true;
+        setCartItems([]);
       }
     } else {
-      setCartItems(mockCartItems);
+      isInternalUpdateRef.current = true;
+      setCartItems([]);
     }
+  };
+
+  useEffect(() => {
+    // Load cart items from localStorage
+    loadCartItems();
 
     // Load applied promo
     const savedPromo = localStorage.getItem('appliedPromo');
@@ -97,16 +116,42 @@ const ShoppingCart = () => {
         setAppliedPromo(null);
       }
     }
+
+    setHasLoaded(true);
+
+    // Listen for cart updates from other pages (but ignore our own updates)
+    const handleCartUpdate = () => {
+      // Only reload if the update came from another page (not from our own save)
+      if (!isInternalUpdateRef.current) {
+        loadCartItems();
+      }
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (but only after initial load and not during loading)
   useEffect(() => {
+    if (!hasLoaded) return;
+    
+    // If this is an internal update (from loading), just save without dispatching event
+    if (isInternalUpdateRef.current) {
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      isInternalUpdateRef.current = false;
+      return;
+    }
+
+    // This is a user-initiated change, save and notify navbar
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     // Dispatch custom event to update navbar cart count
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('cartUpdated'));
     }
-  }, [cartItems]);
+  }, [cartItems, hasLoaded]);
 
   // Save promo to localStorage whenever it changes
   useEffect(() => {

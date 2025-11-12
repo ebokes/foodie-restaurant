@@ -143,8 +143,8 @@ const OurMenu = () => {
                 <Image
                   src={category?.image}
                   alt={category?.imageAlt}
-                  width={100}
-                  height={100}
+                  width={1000}
+                  height={1000}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
 

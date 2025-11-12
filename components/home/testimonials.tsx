@@ -29,7 +29,7 @@ const TestimonialsSection = () => {
       avatarAlt:
         "Professional headshot of Hispanic man with short black hair in navy suit smiling at camera",
       rating: 5,
-      text: "The best burger I&apos;ve ever had! The ingredients are fresh, the service is fast, and the atmosphere is perfect for families. Highly recommend the weekend specials!",
+      text: "The best burger I've ever had! The ingredients are fresh, the service is fast, and the atmosphere is perfect for families. Highly recommend the weekend specials!",
       date: "1 week ago",
     },
     {
@@ -49,7 +49,7 @@ const TestimonialsSection = () => {
       role: "Chef",
       avatar: "https://images.unsplash.com/photo-1607845046636-dca2447c0dee",
       avatarAlt:
-        "Professional headshot of middle-aged man with beard wearing chef&apos;s coat in kitchen setting",
+        "Professional headshot of middle-aged man with beard wearing chef's coat in kitchen setting",
       rating: 5,
       text: "As a fellow chef, I appreciate the attention to detail and quality ingredients. The pasta dishes are exceptional and remind me of authentic Italian cuisine.",
       date: "5 days ago",

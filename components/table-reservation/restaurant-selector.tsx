@@ -46,12 +46,13 @@ const RestaurantSelector: React.FC<RestaurantSelectorProps> = ({
               <Image
                 src={restaurant?.image}
                 alt={restaurant?.imageAlt}
-                fill
+                width={1000}
+                height={1000}
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
                
-              <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-black opacity-20 group-hover:bg-opacity-10 transition-opacity duration-300" />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
                 <span className="text-sm font-body font-medium text-foreground">
                   {restaurant?.capacity} seats

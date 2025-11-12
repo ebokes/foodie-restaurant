@@ -6,24 +6,10 @@ import Header from "../../components/navbar/navbar";
 import BrowseByCategoryWithFilters from "../../components/menu-catalog/browse-by-category-with-filters";
 import MenuGrid from "../../components/menu-catalog/menu-grid";
 import Icon from "../../components/ui/app-icon";
-import { menuItems } from "@/lib/constants";
-import { MenuItem } from "@/types/menu-catalog";
+import { menuItems, categories } from "@/lib/constants";
+import { Filters, MenuItem } from "@/types/menu-catalog";
 import FooterSection from "@/components/footer/footer";
 
-// Define types
-interface Category {
-  id: string;
-  name: string;
-  icon: keyof typeof import("lucide-react");
-  count: number;
-  featured: boolean;
-}
-
-interface Filters {
-  dietary: string;
-  priceRange: string;
-  sortBy: string;
-}
 
 const MenuCatalog = () => {
   const router = useRouter();
@@ -36,44 +22,6 @@ const MenuCatalog = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [cartCount, setCartCount] = useState<number>(3);
 
-  // Mock categories data
-  const categories: Category[] = [
-    {
-      id: "all",
-      name: "All Items",
-      icon: "Grid3X3",
-      count: 48,
-      featured: false,
-    },
-    {
-      id: "appetizers",
-      name: "Appetizers",
-      icon: "Soup",
-      count: 12,
-      featured: true,
-    },
-    {
-      id: "mains",
-      name: "Main Courses",
-      icon: "UtensilsCrossed",
-      count: 18,
-      featured: false,
-    },
-    {
-      id: "desserts",
-      name: "Desserts",
-      icon: "Cake",
-      count: 10,
-      featured: false,
-    },
-    {
-      id: "beverages",
-      name: "Beverages",
-      icon: "Coffee",
-      count: 8,
-      featured: true,
-    },
-  ];
 
   // Simulate loading
   useEffect(() => {
@@ -82,6 +30,22 @@ const MenuCatalog = () => {
     }, 1500);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Load cart count from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
+        try {
+          const cartItems = JSON.parse(savedCart);
+          const count = cartItems.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
+          setCartCount(count);
+        } catch (error) {
+          console.error('Error loading cart count:', error);
+        }
+      }
+    }
   }, []);
 
   const handleCategoryChange = (categoryId: string) => {
@@ -93,25 +57,70 @@ const MenuCatalog = () => {
   };
 
   const handleAddToCart = async (item: MenuItem) => {
-    // Simulate adding to cart
-    console.log("Adding to cart:", item);
-    setCartCount((prev) => prev + 1);
+    try {
+      // Load existing cart items from localStorage
+      const savedCart = localStorage.getItem('cartItems');
+      let cartItems: Array<{
+        id: number;
+        name: string;
+        price: number;
+        quantity: number;
+        image: string;
+        imageAlt: string;
+        customizations: string[];
+        specialRequests: string | null;
+      }> = [];
+
+      if (savedCart) {
+        try {
+          cartItems = JSON.parse(savedCart);
+        } catch (error) {
+          console.error('Error parsing cart items:', error);
+        }
+      }
+
+      // Check if item already exists in cart
+      const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
+
+      if (existingItemIndex >= 0) {
+        // Increment quantity if item exists
+        cartItems[existingItemIndex].quantity += 1;
+      } else {
+        // Add new item to cart
+        cartItems.push({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: 1,
+          image: item.image,
+          imageAlt: item.imageAlt,
+          customizations: [],
+          specialRequests: null
+        });
+      }
+
+      // Save to localStorage
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+      // Dispatch custom event to update navbar cart count
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cartUpdated'));
+      }
+
+      // Update local cart count
+      const newCount = cartItems.reduce((sum, cartItem) => sum + cartItem.quantity, 0);
+      setCartCount(newCount);
+
+      console.log("Added to cart:", item);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
 
     // Show success feedback (you could add a toast notification here)
     return new Promise((resolve) => {
       setTimeout(resolve, 500);
     });
   };
-
-  // const handleCartClick = () => {
-  //   router.push("/shopping-cart");
-  // };
-
-  // const handleAccountClick = (action: string) => {
-  //   if (action === "login") router.push("/login");
-  //   if (action === "register") router.push("/register");
-  //   if (action === "account") router.push("/user-account");
-  // };
 
   return (
     <div className="min-h-screen bg-background pt-16">

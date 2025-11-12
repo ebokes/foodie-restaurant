@@ -3,55 +3,9 @@
 import { Button } from "../ui/button";
 import Image from "next/image";
 import Icon from "../ui/app-icon";
-
+import { specialDeals } from "@/lib/constants";
 const LimitedOffers = () => {
-  const specialDeals = [
-    {
-      id: 1,
-      title: "WEEKEND SPECIAL",
-      subtitle: "Buy 2 Get 1 FREE",
-      description:
-        "Get a free appetizer when you order any two main courses this weekend!",
-      image: "https://images.unsplash.com/photo-1730929851365-015a0b62ae5b",
-      imageAlt:
-        "Three gourmet pizzas with various toppings including pepperoni, vegetables, and cheese on wooden serving boards",
-      discount: "33% OFF",
-      validUntil: "Oct 16, 2024",
-      isNew: true,
-      bgColor: "bg-accent",
-      textColor: "text-accent-foreground",
-    },
-    {
-      id: 2,
-      title: "LUNCH COMBO",
-      subtitle: "Perfect Midday Meal",
-      description:
-        "Burger + Fries + Drink combo at an unbeatable price. Available 11 AM - 3 PM daily.",
-      image: "https://images.unsplash.com/photo-1632919590629-a5ac59280da4",
-      imageAlt:
-        "Delicious burger combo with crispy golden fries and refreshing soft drink on restaurant table",
-      discount: "$12.99",
-      validUntil: "Daily Special",
-      isNew: false,
-      bgColor: "bg-warning",
-      textColor: "text-warning-foreground",
-    },
-    {
-      id: 3,
-      title: "FAMILY FEAST",
-      subtitle: "Feed the Whole Family",
-      description:
-        "Large pizza, garlic bread, salad, and 2L drink. Perfect for family dinner nights!",
-      image: "https://images.unsplash.com/photo-1576458087594-45229e5277ec",
-      imageAlt:
-        "Large family-sized pizza with melted cheese and toppings alongside garlic bread and fresh salad",
-      discount: "SAVE $15",
-      validUntil: "Oct 20, 2024",
-      isNew: true,
-      bgColor: "bg-success",
-      textColor: "text-success-foreground",
-    },
-  ];
+  
 
   return (
     <section className="py-16 bg-background">
@@ -105,12 +59,8 @@ const LimitedOffers = () => {
                 <Image
                   src={deal?.image}
                   alt={deal?.imageAlt}
-                  width={100}
-                  height={100}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  width={1000}
+                  height={1000}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
 
@@ -146,10 +96,11 @@ const LimitedOffers = () => {
 
                 {/* Action Button */}
                 <Button
+
                   variant="tertiary"
                   size="sm"
                   iconName="ArrowRight"
-                  className="w-full group-hover:bg-linear-to-br from-[#b94725] via-[#e8753e] to-[#f4c16d] group-hover:text-white"
+                  className="w-full group-hover:bg-linear-to-br from-primary-solid via-grad1 to-grad2 group-hover:text-white"
                 >
                   Claim Deal
                 </Button>
