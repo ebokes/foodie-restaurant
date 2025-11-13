@@ -4,9 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Icon, { type IconProps } from '@/components/ui/app-icon';
+import { useAppSelector } from '@/lib/store/hooks';
+import { logout } from '@/lib/store/slices/authSlice';
+import { useAppDispatch } from '@/lib/store/hooks';
 
 interface User {
-  id?: number;
+  id?: number | string;
   name?: string;
   email?: string;
   avatar?: string;
@@ -22,14 +25,9 @@ interface NavbarProps {
   onSearch?: (query: string) => void;
 }
 
-interface CartItem {
-  id: number;
-  quantity: number;
-}
-
 const Navbar: React.FC<NavbarProps> = ({ 
   cartCount: propCartCount, 
-  user = null, 
+  user:propUser = null, 
   onCartClick, 
   onAccountClick, 
   onLogout, 
@@ -37,51 +35,16 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const reduxCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = propCartCount !== undefined ? propCartCount : reduxCartCount;
+  const reduxUser = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(propCartCount || 0);
-
-  // Calculate cart count from localStorage if not provided as prop
-  useEffect(() => {
-    if (propCartCount === undefined) {
-      const calculateCartCount = () => {
-        if (typeof window !== 'undefined') {
-          const savedCart = localStorage.getItem('cartItems');
-          if (savedCart) {
-            try {
-              const cartItems: CartItem[] = JSON.parse(savedCart);
-              const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-              setCartCount(count);
-            } catch (error) {
-              setCartCount(0);
-            }
-          } else {
-            setCartCount(0);
-          }
-        }
-      };
-
-      calculateCartCount();
-
-      const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'cartItems') {
-          calculateCartCount();
-        }
-      };
-
-      window.addEventListener('storage', handleStorageChange);
-      window.addEventListener('cartUpdated', calculateCartCount);
-      const interval = setInterval(calculateCartCount, 1000);
-
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('cartUpdated', calculateCartCount);
-        clearInterval(interval);
-      };
-    }
-  }, [propCartCount]);
 
   const navigationItems: Array<{
     label: string;
@@ -92,6 +55,8 @@ const Navbar: React.FC<NavbarProps> = ({
     { label: 'Menu', path: '/menu-catalog', icon: 'UtensilsCrossed' },
     { label: 'Reservations', path: '/table-reservation', icon: 'Calendar' },
   ];
+
+  const user = reduxUser || propUser;
 
   const isActivePath = (path: string): boolean => {
     return pathname === path;
@@ -140,9 +105,8 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   const handleLogoutClick = () => {
-    if (onLogout) {
-      onLogout();
-    }
+    dispatch(logout());
+    router.push('/sign-in');
     setIsUserDropdownOpen(false);
     setIsMobileMenuOpen(false);
   };

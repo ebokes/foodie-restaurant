@@ -8,21 +8,13 @@ import RegistrationForm from '@/components/sign-up/registration-form';
 import SocialRegistration from '@/components/sign-up/social-registration';
 import RegistrationBenefits from '@/components/sign-up/registration-benefits';
 import Icon from '@/components/ui/app-icon';
-
-interface UserData {
-  id: number;
-  name: string;
-  email: string;
-  phone?: string;
-  avatar?: string;
-  avatarAlt?: string;
-  registrationDate?: string;
-  provider?: string;
-}
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { setUser, type UserData } from '@/lib/store/slices/authSlice';
 
 const Register = () => {
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
 
   const [preFilledEmail, setPreFilledEmail] = useState('');
   const [redirectMessage, setRedirectMessage] = useState('');
@@ -34,20 +26,16 @@ const Register = () => {
     }
 
     // Check if user is already logged in
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      setUser(userData);
+    if (user) {
       // Redirect logged-in users to home
       router.push('/');
     }
-  }, [router]);
+  }, [router, user]);
 
   const handleRegister = async (userData: UserData): Promise<void> => {
-    setUser(userData);
     console.log('User registered:', userData);
 
-    // Store user data
+    // Store user data in Redux
     const userToStore: UserData = {
       ...userData,
       id: Date.now(),
@@ -56,7 +44,7 @@ const Register = () => {
       avatarAlt: 'Profile picture placeholder showing default avatar icon'
     };
 
-    localStorage.setItem('currentUser', JSON.stringify(userToStore));
+    dispatch(setUser(userToStore));
 
     // Redirect to intended destination
     const redirectTo = localStorage.getItem('loginRedirect') || '/';
@@ -65,10 +53,9 @@ const Register = () => {
   };
 
   const handleSocialRegister = async (userData: UserData, provider: string): Promise<void> => {
-    setUser(userData);
     console.log(`User registered via ${provider}:`, userData);
 
-    // Store user data
+    // Store user data in Redux
     const userToStore: UserData = {
       ...userData,
       id: Date.now(),
@@ -78,7 +65,7 @@ const Register = () => {
       provider
     };
 
-    localStorage.setItem('currentUser', JSON.stringify(userToStore));
+    dispatch(setUser(userToStore));
 
     // Redirect to intended destination
     const redirectTo = localStorage.getItem('loginRedirect') || '/';

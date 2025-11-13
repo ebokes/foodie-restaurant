@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar/navbar';
 import CartItem from '@/components/shopping-cart/cart-item';
@@ -9,64 +9,15 @@ import EmptyCart from '@/components/shopping-cart/empty-card';
 import PromoCodeSection from '@/components/shopping-cart/promo-code-section';
 import Icon from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  imageAlt: string;
-  customizations: string[];
-  specialRequests: string | null;
-}
-
-interface PromoCode {
-  code: string;
-  discount: number;
-  description: string;
-  minOrder: number;
-}
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { updateQuantity, removeItem, applyPromo, removePromo, type PromoCode } from '@/lib/store/slices/cartSlice';
 
 const ShoppingCart = () => {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const appliedPromo = useAppSelector((state) => state.cart.appliedPromo);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-
-  // Mock cart data
-  const mockCartItems: CartItem[] = [
-  {
-    id: 1,
-    name: "Classic Beef Burger",
-    price: 12.99,
-    quantity: 2,
-    image: "https://images.unsplash.com/photo-1585508718415-6d83666de492",
-    imageAlt: "Juicy beef burger with lettuce, tomato, and cheese on sesame bun",
-    customizations: ["Extra cheese", "No onions"],
-    specialRequests: "Medium rare patty"
-  },
-  {
-    id: 2,
-    name: "Margherita Pizza",
-    price: 16.99,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1703784022146-b72677752ce5",
-    imageAlt: "Traditional margherita pizza with fresh basil, mozzarella, and tomato sauce",
-    customizations: ["Thin crust"],
-    specialRequests: null
-  },
-  {
-    id: 3,
-    name: "Caesar Salad",
-    price: 9.99,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1598268013060-1f5baade2fc0",
-    imageAlt: "Fresh caesar salad with romaine lettuce, croutons, and parmesan cheese",
-    customizations: ["Extra dressing", "Add chicken"],
-    specialRequests: "Dressing on the side"
-  }];
-
 
   // Available promo codes
   const availablePromoCodes: Record<string, PromoCode> = {
@@ -75,103 +26,12 @@ const ShoppingCart = () => {
     'WELCOME15': { code: 'WELCOME15', discount: 0.15, description: '15% off welcome offer', minOrder: 15 }
   };
 
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const isInternalUpdateRef = React.useRef(false);
-
-  const loadCartItems = () => {
-    if (typeof window === 'undefined') return;
-    
-    const savedCart = localStorage.getItem('cartItems');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        // Only set cart items if we actually have items
-        if (parsedCart && parsedCart.length > 0) {
-          isInternalUpdateRef.current = true;
-          setCartItems(parsedCart);
-        } else {
-          isInternalUpdateRef.current = true;
-          setCartItems([]);
-        }
-      } catch (error) {
-        isInternalUpdateRef.current = true;
-        setCartItems([]);
-      }
-    } else {
-      isInternalUpdateRef.current = true;
-      setCartItems([]);
-    }
-  };
-
-  useEffect(() => {
-    // Load cart items from localStorage
-    loadCartItems();
-
-    // Load applied promo
-    const savedPromo = localStorage.getItem('appliedPromo');
-    if (savedPromo) {
-      try {
-        setAppliedPromo(JSON.parse(savedPromo));
-      } catch (error) {
-        setAppliedPromo(null);
-      }
-    }
-
-    setHasLoaded(true);
-
-    // Listen for cart updates from other pages (but ignore our own updates)
-    const handleCartUpdate = () => {
-      // Only reload if the update came from another page (not from our own save)
-      if (!isInternalUpdateRef.current) {
-        loadCartItems();
-      }
-    };
-
-    window.addEventListener('cartUpdated', handleCartUpdate);
-
-    return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-    };
-  }, []);
-
-  // Save cart to localStorage whenever it changes (but only after initial load and not during loading)
-  useEffect(() => {
-    if (!hasLoaded) return;
-    
-    // If this is an internal update (from loading), just save without dispatching event
-    if (isInternalUpdateRef.current) {
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
-      isInternalUpdateRef.current = false;
-      return;
-    }
-
-    // This is a user-initiated change, save and notify navbar
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    // Dispatch custom event to update navbar cart count
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('cartUpdated'));
-    }
-  }, [cartItems, hasLoaded]);
-
-  // Save promo to localStorage whenever it changes
-  useEffect(() => {
-    if (appliedPromo) {
-      localStorage.setItem('appliedPromo', JSON.stringify(appliedPromo));
-    } else {
-      localStorage.removeItem('appliedPromo');
-    }
-  }, [appliedPromo]);
-
   const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
   };
 
   const handleRemoveItem = (itemId: number) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    dispatch(removeItem(itemId));
   };
 
   const handleModifyItem = (itemId: number) => {
@@ -185,7 +45,7 @@ const ShoppingCart = () => {
         const promo = availablePromoCodes[promoCode];
         const currentSubtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
         if (promo && currentSubtotal >= promo.minOrder) {
-          setAppliedPromo(promo);
+          dispatch(applyPromo(promo));
           resolve({ success: true });
         } else if (promo) {
           resolve({
@@ -203,7 +63,7 @@ const ShoppingCart = () => {
   };
 
   const handleRemovePromo = () => {
-    setAppliedPromo(null);
+    dispatch(removePromo());
   };
 
   const handleCheckout = async () => {

@@ -7,33 +7,17 @@ import LoginHeader from '@/components/login/login-header';
 import LoginForm from '@/components/login/login-form';
 import SocialLogin from '@/components/login/social-login';
 import Icon from '@/components/ui/app-icon';
-
-
-interface UserData {
-  id: number;
-  name: string;
-  email: string;
-  avatar?: string;
-  avatarAlt?: string;
-  loginTime?: string;
-  rememberMe?: boolean;
-}
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { setUser, logout, type UserData } from '@/lib/store/slices/authSlice';
 
 const LoginPage = () => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<UserData | null>(null);
   const router = useRouter();
 
-  // Check if user is already logged in - only set user state, don't redirect automatically
+  // Store the intended destination for after login
   useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      setUser(userData);
-      // Remove automatic redirect - let user decide to stay or go
-    }
-
-    // Store the intended destination for after login
     const from = typeof window !== 'undefined' ? window.location.pathname : '/';
     if (from !== '/sign-in') {
       localStorage.setItem('loginRedirect', from);
@@ -47,19 +31,14 @@ const LoginPage = () => {
       // Simulate login process
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Store user data
+      // Store user data in Redux
       const userToStore = {
         ...userData,
         loginTime: new Date()?.toISOString(),
         rememberMe
       };
       
-      localStorage.setItem('currentUser', JSON.stringify(userToStore));
-      if (rememberMe) {
-        localStorage.setItem('rememberUser', 'true');
-      }
-      
-      setUser(userToStore);
+      dispatch(setUser(userToStore));
       
       // Success notification could be added here
       console.log('Login successful:', userToStore);
@@ -81,11 +60,8 @@ const LoginPage = () => {
   };
 
   const handleLogout = () => {
-    // Clear user data
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('rememberUser');
+    dispatch(logout());
     localStorage.removeItem('loginRedirect');
-    setUser(null);
     // Stay on login page after logout instead of redirecting
   };
 

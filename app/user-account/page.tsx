@@ -11,6 +11,8 @@ import SecuritySection from '@/components/user-account/security-section';
 import PaymentMethodsSection from '@/components/user-account/payment-methods-section';
 import Icon, { type IconProps } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { updateUser, logout } from '@/lib/store/slices/authSlice';
 
 interface User {
   id: string;
@@ -108,16 +110,34 @@ interface Tab {
 
 const UserAccount = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const reduxUser = useAppSelector((state) => state.auth.user);
   const [activeTab, setActiveTab] = useState<string>('profile');
-  const [user, setUser] = useState<User>({
-    id: "user_001",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@email.com",
-    phone: "(555) 123-4567",
-    dateOfBirth: "1990-05-15",
-    joinDate: "2023-03-15",
-    totalOrders: 24,
-    favoriteItems: 8
+  
+  // Initialize user from Redux or use defaults
+  const [user, setUser] = useState<User>(() => {
+    if (reduxUser) {
+      return {
+        id: String(reduxUser.id || "user_001"),
+        name: reduxUser.name || "Sarah Johnson",
+        email: reduxUser.email || "sarah.johnson@email.com",
+        phone: reduxUser.phone || "(555) 123-4567",
+        dateOfBirth: reduxUser.dateOfBirth || "1990-05-15",
+        joinDate: reduxUser.joinDate || "2023-03-15",
+        totalOrders: 24,
+        favoriteItems: 8
+      };
+    }
+    return {
+      id: "user_001",
+      name: "Sarah Johnson",
+      email: "sarah.johnson@email.com",
+      phone: "(555) 123-4567",
+      dateOfBirth: "1990-05-15",
+      joinDate: "2023-03-15",
+      totalOrders: 24,
+      favoriteItems: 8
+    };
   });
 
   const [addresses, setAddresses] = useState<Address[]>([
@@ -328,15 +348,16 @@ const UserAccount = () => {
 
   // Check authentication on component mount
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    if (!isAuthenticated) {
+    if (!reduxUser) {
       router.push('/sign-in');
     }
-  }, [router]);
+  }, [router, reduxUser]);
 
   // Profile handlers
   const handleUpdateProfile = (updatedData: Partial<User>): void => {
     setUser((prev) => ({ ...prev, ...updatedData }));
+    // Update Redux store
+    dispatch(updateUser(updatedData));
     console.log('Profile updated:', updatedData);
   };
 
@@ -420,8 +441,7 @@ const UserAccount = () => {
 
   // Header handlers
   const handleLogout = (): void => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
+    dispatch(logout());
     router.push('/sign-in');
   };
 

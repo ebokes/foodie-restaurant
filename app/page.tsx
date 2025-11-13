@@ -1,9 +1,9 @@
 import HomePage from "@/components/home";
 
 export const metadata = {
-  title: "Foodies Restaurant - Fresh taste, healthy living",
+  title: "Foodies Restaurant - A world of flavor on one plate.",
   description:
-    "From farm-fresh ingredients to wholesome recipes, Foodies Restaurant brings you meals that nourish the body and delight the taste buds.",
+    "Discover dishes inspired by global cuisines, carefully curated to take your taste buds on a flavorful adventure without leaving your seat",
 };
 
 export default function Home() {

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar/navbar';
 import Icon from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { updateUser, logout } from '@/lib/store/slices/authSlice';
 
 import ProfileAvatarSection from '@/components/profile-details/profile-avatar-section';
 import PersonalInfoSection from '@/components/profile-details/personal-info-section';
@@ -47,44 +49,66 @@ interface User {
 
 const ProfileDetails = () => {
   const router = useRouter();
-  const [user, setUser] = useState<User>({
-    id: "user_001",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@email.com",
-    phone: "(555) 123-4567",
-    dateOfBirth: "1990-05-15",
-    avatar: "https://images.unsplash.com/photo-1612041719716-8db1f9a7de96",
-    avatarAlt: "Profile photo of Sarah Johnson with brown hair and friendly smile",
-    joinDate: "2023-03-15",
-    lastLogin: "2024-10-15T10:30:00Z",
-    bio: "Food enthusiast who loves trying new cuisines and exploring different flavors.",
-    preferences: {
-      newsletter: true,
-      notifications: true,
-      marketing: false
-    },
-    addresses: [
-    {
-      id: "addr_001",
-      label: "Home",
-      street: "123 Oak Street",
-      apartment: "Apt 2B",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      isDefault: true
-    },
-    {
-      id: "addr_002",
-      label: "Work",
-      street: "456 Business Ave",
-      apartment: "Suite 200",
-      city: "New York",
-      state: "NY",
-      zipCode: "10002",
-      isDefault: false
-    }]
-
+  const dispatch = useAppDispatch();
+  const reduxUser = useAppSelector((state) => state.auth.user);
+  
+  // Initialize user state with Redux user or default values
+  const [user, setUser] = useState<User>(() => {
+    if (reduxUser) {
+      return {
+        id: reduxUser.id,
+        name: reduxUser.name,
+        email: reduxUser.email,
+        phone: reduxUser.phone,
+        dateOfBirth: reduxUser.dateOfBirth,
+        avatar: reduxUser.avatar,
+        avatarAlt: reduxUser.avatarAlt,
+        joinDate: reduxUser.joinDate,
+        lastLogin: reduxUser.lastLogin,
+        bio: reduxUser.bio,
+        preferences: reduxUser.preferences,
+        addresses: reduxUser.addresses,
+      };
+    }
+    return {
+      id: "user_001",
+      name: "Sarah Johnson",
+      email: "sarah.johnson@email.com",
+      phone: "(555) 123-4567",
+      dateOfBirth: "1990-05-15",
+      avatar: "https://images.unsplash.com/photo-1612041719716-8db1f9a7de96",
+      avatarAlt: "Profile photo of Sarah Johnson with brown hair and friendly smile",
+      joinDate: "2023-03-15",
+      lastLogin: "2024-10-15T10:30:00Z",
+      bio: "Food enthusiast who loves trying new cuisines and exploring different flavors.",
+      preferences: {
+        newsletter: true,
+        notifications: true,
+        marketing: false
+      },
+      addresses: [
+        {
+          id: "addr_001",
+          label: "Home",
+          street: "123 Oak Street",
+          apartment: "Apt 2B",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          isDefault: true
+        },
+        {
+          id: "addr_002",
+          label: "Work",
+          street: "456 Business Ave",
+          apartment: "Suite 200",
+          city: "New York",
+          state: "NY",
+          zipCode: "10002",
+          isDefault: false
+        }
+      ]
+    };
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -92,24 +116,11 @@ const ProfileDetails = () => {
 
   // Check authentication
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    const currentUser = localStorage.getItem('currentUser');
-
-    if (!isAuthenticated) {
+    if (!reduxUser) {
       router.push('/sign-in');
       return;
     }
-
-    // Load user data from localStorage if available
-    if (currentUser) {
-      try {
-        const userData = JSON.parse(currentUser);
-        setUser((prevUser) => ({ ...prevUser, ...userData }));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    }
-  }, [router]);
+  }, [router, reduxUser]);
 
   // Save changes handler
   const handleSaveChanges = async () => {
@@ -118,8 +129,21 @@ const ProfileDetails = () => {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Update localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Update Redux store - convert User to UserData format
+      dispatch(updateUser({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        dateOfBirth: user.dateOfBirth,
+        avatar: user.avatar || undefined,
+        avatarAlt: user.avatarAlt || undefined,
+        joinDate: user.joinDate,
+        lastLogin: user.lastLogin,
+        bio: user.bio,
+        preferences: user.preferences,
+        addresses: user.addresses
+      }));
 
       setHasUnsavedChanges(false);
 
@@ -133,7 +157,7 @@ const ProfileDetails = () => {
   };
 
   // Update user data
-  const updateUser = (updates: Partial<User>) => {
+  const updateUserLocal = (updates: Partial<User>) => {
     setUser((prev) => ({ ...prev, ...updates }));
     setHasUnsavedChanges(true);
   };
@@ -146,8 +170,7 @@ const ProfileDetails = () => {
 
   // Header handlers
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('currentUser');
+    dispatch(logout());
     router.push('/sign-in');
   };
 
@@ -242,19 +265,19 @@ const ProfileDetails = () => {
                 avatar: user.avatar,
                 avatarAlt: user.avatarAlt
               }}
-              onUpdateUser={updateUser} />
+              onUpdateUser={updateUserLocal} />
 
 
             {/* Personal Information Section */}
             <PersonalInfoSection
               user={user}
-              onUpdateUser={updateUser} />
+              onUpdateUser={updateUserLocal} />
 
 
             {/* Contact Information Section */}
             <ContactInfoSection
               user={user}
-              onUpdateUser={updateUser} />
+              onUpdateUser={updateUserLocal} />
 
 
             {/* Address Information Section */}
@@ -269,7 +292,7 @@ const ProfileDetails = () => {
                 id: user.id ? String(user.id) : undefined,
                 lastLogin: user.lastLogin
               }}
-              onUpdateUser={updateUser} />
+              onUpdateUser={updateUserLocal} />
 
           </div>
 

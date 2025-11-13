@@ -9,10 +9,16 @@ import Icon from "../../components/ui/app-icon";
 import { menuItems, categories } from "@/lib/constants";
 import { Filters, MenuItem } from "@/types/menu-catalog";
 import FooterSection from "@/components/footer/footer";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { addItem } from "@/lib/store/slices/cartSlice";
 
 
 const MenuCatalog = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [filters, setFilters] = useState<Filters>({
     dietary: "",
@@ -20,8 +26,6 @@ const MenuCatalog = () => {
     sortBy: "name",
   });
   const [loading, setLoading] = useState<boolean>(true);
-  const [cartCount, setCartCount] = useState<number>(3);
-
 
   // Simulate loading
   useEffect(() => {
@@ -30,22 +34,6 @@ const MenuCatalog = () => {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, []);
-
-  // Load cart count from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('cartItems');
-      if (savedCart) {
-        try {
-          const cartItems = JSON.parse(savedCart);
-          const count = cartItems.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
-          setCartCount(count);
-        } catch (error) {
-          console.error('Error loading cart count:', error);
-        }
-      }
-    }
   }, []);
 
   const handleCategoryChange = (categoryId: string) => {
@@ -58,58 +46,16 @@ const MenuCatalog = () => {
 
   const handleAddToCart = async (item: MenuItem) => {
     try {
-      // Load existing cart items from localStorage
-      const savedCart = localStorage.getItem('cartItems');
-      let cartItems: Array<{
-        id: number;
-        name: string;
-        price: number;
-        quantity: number;
-        image: string;
-        imageAlt: string;
-        customizations: string[];
-        specialRequests: string | null;
-      }> = [];
-
-      if (savedCart) {
-        try {
-          cartItems = JSON.parse(savedCart);
-        } catch (error) {
-          console.error('Error parsing cart items:', error);
-        }
-      }
-
-      // Check if item already exists in cart
-      const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
-
-      if (existingItemIndex >= 0) {
-        // Increment quantity if item exists
-        cartItems[existingItemIndex].quantity += 1;
-      } else {
-        // Add new item to cart
-        cartItems.push({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: 1,
-          image: item.image,
-          imageAlt: item.imageAlt,
-          customizations: [],
-          specialRequests: null
-        });
-      }
-
-      // Save to localStorage
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
-
-      // Dispatch custom event to update navbar cart count
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('cartUpdated'));
-      }
-
-      // Update local cart count
-      const newCount = cartItems.reduce((sum, cartItem) => sum + cartItem.quantity, 0);
-      setCartCount(newCount);
+      dispatch(addItem({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        image: item.image,
+        imageAlt: item.imageAlt,
+        customizations: [],
+        specialRequests: null
+      }));
 
       console.log("Added to cart:", item);
     } catch (error) {
