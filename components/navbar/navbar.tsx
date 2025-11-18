@@ -4,9 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Icon, { type IconProps } from '@/components/ui/app-icon';
-import { useAppSelector } from '@/lib/store/hooks';
-import { logout } from '@/lib/store/slices/authSlice';
-import { useAppDispatch } from '@/lib/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { signOutUser } from '@/lib/store/slices/authSlice';
 
 interface User {
   id?: number | string;
@@ -27,7 +26,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ 
   cartCount: propCartCount, 
-  user:propUser = null, 
+  user: propUser = null, 
   onCartClick, 
   onAccountClick, 
   onLogout, 
@@ -39,13 +38,23 @@ const Navbar: React.FC<NavbarProps> = ({
   const reduxCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartCount = propCartCount !== undefined ? propCartCount : reduxCartCount;
   const reduxUser = useAppSelector((state) => state.auth.user);
-  const dispatch = useAppDispatch();
+  
+  // Use prop user if provided, otherwise use Redux user
+  const user = propUser !== null ? propUser : (reduxUser ? {
+    id: typeof reduxUser.id === 'number' ? reduxUser.id : undefined,
+    name: reduxUser.name,
+    email: reduxUser.email,
+    avatar: reduxUser.avatar,
+    avatarAlt: reduxUser.avatarAlt
+  } : null);
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
+  const dispatch = useAppDispatch();
+  
   const navigationItems: Array<{
     label: string;
     path: string;
@@ -55,8 +64,6 @@ const Navbar: React.FC<NavbarProps> = ({
     { label: 'Menu', path: '/menu-catalog', icon: 'UtensilsCrossed' },
     { label: 'Reservations', path: '/table-reservation', icon: 'Calendar' },
   ];
-
-  const user = reduxUser || propUser;
 
   const isActivePath = (path: string): boolean => {
     return pathname === path;
@@ -104,8 +111,8 @@ const Navbar: React.FC<NavbarProps> = ({
     setIsMobileMenuOpen(false);
   };
 
-  const handleLogoutClick = () => {
-    dispatch(logout());
+  const handleLogoutClick = async () => {
+    await dispatch(signOutUser()).unwrap();
     router.push('/sign-in');
     setIsUserDropdownOpen(false);
     setIsMobileMenuOpen(false);
@@ -183,17 +190,17 @@ const Navbar: React.FC<NavbarProps> = ({
               href="/"
               className="flex items-center space-x-2 group"
             >
-              <div className="w-10 h-10 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                 <Icon name="Salad" size={24} color="white" />
-              </div>
-              <div className="hidden sm:block">
+            </div>
+            <div className="hidden sm:block">
                 <h1 className="text-xl font-heading font-bold text-primary">Foodies</h1>
                 <p className="text-xs font-caption text-muted-foreground -mt-1">Restaurant</p>
-              </div>
-            </Link>
-          </div>
+            </div>
+          </Link>
+        </div>
 
-          {/* Desktop Navigation */}
+        {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {navigationItems.map((item) => (
               <button
@@ -215,10 +222,10 @@ const Navbar: React.FC<NavbarProps> = ({
                 <div className={`relative flex items-center transition-all duration-200 ${
                   isSearchFocused ? 'scale-102' : ''
                 }`}>
-                  <Icon 
-                    name="Search" 
-                    size={16} 
-                    className="absolute left-3 text-muted-foreground pointer-events-none" 
+                  <Icon
+                    name="Search"
+                    size={16}
+                    className="absolute left-3 text-muted-foreground pointer-events-none"
                   />
                   <input
                     type="text"
@@ -270,17 +277,24 @@ const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                   className="user-profile-button flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"
                 >
-                  {user?.avatar ? (
+                  {user?.avatar && user.avatar.trim() !== '' ? (
                     <img
-                      src={user?.avatar}
+                      src={user.avatar}
                       alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
                       className="w-8 h-8 rounded-full object-cover border border-border"
+                      onError={(e) => {
+                        // Hide image on error and show fallback
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-xs font-bold">
-                      {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
-                    </div>
-                  )}
+                  ) : null}
+                  <div 
+                    className={`w-8 h-8 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-xs font-bold ${user?.avatar && user.avatar.trim() !== '' ? 'hidden' : ''}`}
+                  >
+                    {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                  </div>
                   <div className="text-left">
                     <p className="text-sm font-medium">{user?.name || 'User'}</p>
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -292,17 +306,23 @@ const Navbar: React.FC<NavbarProps> = ({
                   <div className="user-dropdown absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-lg shadow-warm-lg overflow-hidden z-50">
                     <div className="p-3 border-b border-border">
                       <div className="flex items-center space-x-3">
-                        {user?.avatar ? (
+                        {user?.avatar && user.avatar.trim() !== '' ? (
                           <img
-                            src={user?.avatar}
+                            src={user.avatar}
                             alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
                             className="w-10 h-10 rounded-full object-cover border border-border"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
                           />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-sm font-bold">
-                            {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
-                          </div>
-                        )}
+                        ) : null}
+                        <div 
+                          className={`w-10 h-10 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-sm font-bold ${user?.avatar && user.avatar.trim() !== '' ? 'hidden' : ''}`}
+                        >
+                          {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                        </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">{user?.name || 'User'}</p>
                           <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -442,7 +462,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 )}
               </div>
             </form>
-          </div>
+            </div>
 
           {/* Mobile Navigation Items */}
           <nav className="space-y-2">
@@ -469,17 +489,23 @@ const Navbar: React.FC<NavbarProps> = ({
                 <h3 className="text-sm font-body font-medium text-muted-foreground mb-3">Account</h3>
                 <div className="mb-4 p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-3">
-                    {user?.avatar ? (
+                    {user?.avatar && user.avatar.trim() !== '' ? (
                       <img
-                        src={user?.avatar}
+                        src={user.avatar}
                         alt={user?.avatarAlt || `Profile picture of ${user?.name || user?.email}`}
                         className="w-12 h-12 rounded-full object-cover border border-border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
                       />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-lg font-bold">
-                        {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
-                      </div>
-                    )}
+                    ) : null}
+                    <div 
+                      className={`w-12 h-12 rounded-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground flex items-center justify-center text-lg font-bold ${user?.avatar && user.avatar.trim() !== '' ? 'hidden' : ''}`}
+                    >
+                      {user?.name ? user?.name?.charAt(0)?.toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
+                    </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{user?.name || 'User'}</p>
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -495,7 +521,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     <span>My Account</span>
                   </button>
                   <button
-                    onClick={() => {
+              onClick={() => {
                       router.push('/order-tracking');
                       setIsMobileMenuOpen(false);
                     }}
@@ -505,7 +531,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     <span>Order Tracking</span>
                   </button>
                   <button
-                    onClick={() => {
+              onClick={() => {
                       router.push('/table-reservation');
                       setIsMobileMenuOpen(false);
                     }}

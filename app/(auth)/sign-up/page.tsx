@@ -9,7 +9,7 @@ import SocialRegistration from '@/components/sign-up/social-registration';
 import RegistrationBenefits from '@/components/sign-up/registration-benefits';
 import Icon from '@/components/ui/app-icon';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { setUser, type UserData } from '@/lib/store/slices/authSlice';
+import { signUpUser, signInWithGoogle } from '@/lib/store/slices/authSlice';
 
 const Register = () => {
   const router = useRouter();
@@ -32,45 +32,39 @@ const Register = () => {
     }
   }, [router, user]);
 
-  const handleRegister = async (userData: UserData): Promise<void> => {
-    console.log('User registered:', userData);
+  const handleRegister = async (registrationData: { email: string; password: string; name: string; phone?: string }): Promise<void> => {
+    try {
+      // Use Firebase auth
+      await dispatch(signUpUser({
+        email: registrationData.email,
+        password: registrationData.password,
+        name: registrationData.name,
+        phone: registrationData.phone,
+      })).unwrap();
 
-    // Store user data in Redux
-    const userToStore: UserData = {
-      ...userData,
-      id: Date.now(),
-      registrationDate: new Date().toISOString(),
-      avatar: "https://images.unsplash.com/photo-1681398836231-d0b89bd571d6",
-      avatarAlt: 'Profile picture placeholder showing default avatar icon'
-    };
-
-    dispatch(setUser(userToStore));
-
-    // Redirect to intended destination
-    const redirectTo = localStorage.getItem('loginRedirect') || '/';
-    localStorage.removeItem('loginRedirect');
-    router.push(redirectTo);
+      // Redirect to intended destination
+      const redirectTo = localStorage.getItem('loginRedirect') || '/';
+      localStorage.removeItem('loginRedirect');
+      router.push(redirectTo);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      // Error is handled by Redux, you can access it via state.auth.error
+    }
   };
 
-  const handleSocialRegister = async (userData: UserData, provider: string): Promise<void> => {
-    console.log(`User registered via ${provider}:`, userData);
+  const handleSocialRegister = async (provider: string): Promise<void> => {
+    try {
+      if (provider === 'google') {
+        await dispatch(signInWithGoogle()).unwrap();
+      }
 
-    // Store user data in Redux
-    const userToStore: UserData = {
-      ...userData,
-      id: Date.now(),
-      registrationDate: new Date().toISOString(),
-      avatar: "https://images.unsplash.com/photo-1681398836231-d0b89bd571d6",
-      avatarAlt: 'Profile picture placeholder showing default avatar icon',
-      provider
-    };
-
-    dispatch(setUser(userToStore));
-
-    // Redirect to intended destination
-    const redirectTo = localStorage.getItem('loginRedirect') || '/';
-    localStorage.removeItem('loginRedirect');
-    router.push(redirectTo);
+      // Redirect to intended destination
+      const redirectTo = localStorage.getItem('loginRedirect') || '/';
+      localStorage.removeItem('loginRedirect');
+      router.push(redirectTo);
+    } catch (error: any) {
+      console.error('Social registration error:', error);
+    }
   };
 
   return (

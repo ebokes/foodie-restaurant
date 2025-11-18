@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/app-icon';
 
 interface LoginFormProps {
-  onLogin: (userData: any, rememberMe?: boolean) => Promise<void>;
+  onLogin: (credentials: { email: string; password: string }, rememberMe?: boolean) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -33,12 +33,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false }) => 
   });
   const [errors, setErrors] = useState<Errors>({});
   const router = useRouter();
-
-  // Mock credentials for testing
-  const mockCredentials = {
-    email: 'john.doe@example.com',
-    password: 'password123'
-  };
 
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
@@ -83,24 +77,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false }) => 
       return;
     }
 
-    // Check mock credentials
-    if (formData.email !== mockCredentials.email || formData.password !== mockCredentials.password) {
-      setErrors({
-        general: `Invalid credentials. Use email: ${mockCredentials.email} and password: ${mockCredentials.password}`
-      });
-      return;
-    }
-
-    // Simulate successful login
-    const mockUser = {
-      id: 1,
-      name: 'John Doe',
-      email: formData.email,
-      avatar: "https://images.unsplash.com/photo-1588178457501-31b7688a41a0",
-      avatarAlt: 'Professional headshot of smiling man with short brown hair in navy blazer'
-    };
-
-    await onLogin(mockUser, formData.rememberMe);
+    // Pass credentials to parent component for Firebase authentication
+    await onLogin(
+      { email: formData.email, password: formData.password },
+      formData.rememberMe
+    );
 
     // Note: Redirect is now handled by the parent component after login completion
   };

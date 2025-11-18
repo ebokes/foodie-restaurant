@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Icon, { type IconProps } from '@/components/ui/app-icon';
 
 interface SocialRegistrationProps {
-  onSocialRegister: (userData: any, provider: string) => Promise<void>;
+  onSocialRegister: (provider: string) => Promise<void>;
 }
 
 type ProviderId = 'google' | 'facebook' | 'apple';
@@ -20,23 +20,8 @@ const SocialRegistration: React.FC<SocialRegistrationProps> = ({ onSocialRegiste
     setIsLoading(prev => ({ ...prev, [provider]: true } as Record<ProviderId, boolean>));
 
     try {
-      // Simulate social registration API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock successful social registration
-      const mockUser = {
-        id: Date.now(),
-        name: provider === 'google' ? 'John Smith' : 
-              provider === 'facebook' ? 'Sarah Johnson' : 'Mike Wilson',
-        email: provider === 'google' ? 'john.smith@gmail.com' : 
-               provider === 'facebook' ? 'sarah.johnson@facebook.com' : 'mike.wilson@icloud.com',
-        provider: provider,
-        avatar: `https://randomuser.me/api/portraits/${provider === 'facebook' ? 'women' : 'men'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
-        avatarAlt: `Professional headshot of ${provider === 'facebook' ? 'woman' : 'man'} with friendly smile`,
-        createdAt: new Date().toISOString()
-      };
-
-      await onSocialRegister(mockUser, provider);
+      // Pass provider ID to parent component for Firebase authentication
+      await onSocialRegister(provider);
     } catch (error) {
       console.error(`${provider} registration failed:`, error);
     } finally {
@@ -60,22 +45,22 @@ const SocialRegistration: React.FC<SocialRegistrationProps> = ({ onSocialRegiste
       textColor: 'text-gray-700',
       borderColor: 'border-gray-300'
     },
-    {
-      id: 'facebook',
-      name: 'Facebook',
-      icon: 'Facebook',
-      bgColor: 'bg-blue-600 hover:bg-blue-700',
-      textColor: 'text-white',
-      borderColor: 'border-blue-600'
-    },
-    {
-      id: 'apple',
-      name: 'Apple',
-      icon: 'Apple',
-      bgColor: 'bg-black hover:bg-gray-900',
-      textColor: 'text-white',
-      borderColor: 'border-black'
-    }
+    // {
+    //   id: 'facebook',
+    //   name: 'Facebook',
+    //   icon: 'Facebook',
+    //   bgColor: 'bg-blue-600 hover:bg-blue-700',
+    //   textColor: 'text-white',
+    //   borderColor: 'border-blue-600'
+    // },
+    // {
+    //   id: 'apple',
+    //   name: 'Apple',
+    //   icon: 'Apple',
+    //   bgColor: 'bg-black hover:bg-gray-900',
+    //   textColor: 'text-white',
+    //   borderColor: 'border-black'
+    // }
   ];
 
   return (
@@ -90,7 +75,7 @@ const SocialRegistration: React.FC<SocialRegistrationProps> = ({ onSocialRegiste
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1">
         {socialProviders.map((provider) => (
           <button
             key={provider.id}

@@ -6,7 +6,10 @@ import Navbar from '@/components/navbar/navbar';
 import Icon from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { updateUser, logout } from '@/lib/store/slices/authSlice';
+import { updateUser, signOutUser } from '@/lib/store/slices/authSlice';
+import { auth, db } from '@/lib/firebase/config';
+import { userService } from '@/lib/firebase/user';
+import { doc, setDoc } from 'firebase/firestore';
 
 import ProfileAvatarSection from '@/components/profile-details/profile-avatar-section';
 import PersonalInfoSection from '@/components/profile-details/personal-info-section';
@@ -52,82 +55,90 @@ const ProfileDetails = () => {
   const dispatch = useAppDispatch();
   const reduxUser = useAppSelector((state) => state.auth.user);
   
-  // Initialize user state with Redux user or default values
-  const [user, setUser] = useState<User>(() => {
-    if (reduxUser) {
-      return {
-        id: reduxUser.id,
-        name: reduxUser.name,
-        email: reduxUser.email,
-        phone: reduxUser.phone,
-        dateOfBirth: reduxUser.dateOfBirth,
-        avatar: reduxUser.avatar,
-        avatarAlt: reduxUser.avatarAlt,
-        joinDate: reduxUser.joinDate,
-        lastLogin: reduxUser.lastLogin,
-        bio: reduxUser.bio,
-        preferences: reduxUser.preferences,
-        addresses: reduxUser.addresses,
-      };
-    }
-    return {
-      id: "user_001",
-      name: "Sarah Johnson",
-      email: "sarah.johnson@email.com",
-      phone: "(555) 123-4567",
-      dateOfBirth: "1990-05-15",
-      avatar: "https://images.unsplash.com/photo-1612041719716-8db1f9a7de96",
-      avatarAlt: "Profile photo of Sarah Johnson with brown hair and friendly smile",
-      joinDate: "2023-03-15",
-      lastLogin: "2024-10-15T10:30:00Z",
-      bio: "Food enthusiast who loves trying new cuisines and exploring different flavors.",
-      preferences: {
-        newsletter: true,
-        notifications: true,
-        marketing: false
-      },
-      addresses: [
-        {
-          id: "addr_001",
-          label: "Home",
-          street: "123 Oak Street",
-          apartment: "Apt 2B",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          isDefault: true
-        },
-        {
-          id: "addr_002",
-          label: "Work",
-          street: "456 Business Ave",
-          apartment: "Suite 200",
-          city: "New York",
-          state: "NY",
-          zipCode: "10002",
-          isDefault: false
-        }
-      ]
-    };
-  });
-
-  const [isLoading, setIsLoading] = useState(false);
+  // Initialize user state
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Check authentication
+  // Check authentication and load user data
   useEffect(() => {
     if (!reduxUser) {
       router.push('/sign-in');
       return;
     }
+
+    const loadUserData = async () => {
+      if (!auth.currentUser) {
+        router.push('/sign-in');
+        return;
+      }
+
+      setIsLoading(true);
+      const userId = auth.currentUser.uid;
+
+      try {
+        // Load user profile from Redux
+        setUser({
+          id: reduxUser.id,
+          name: reduxUser.name,
+          email: reduxUser.email,
+          phone: reduxUser.phone,
+          dateOfBirth: reduxUser.dateOfBirth,
+          avatar: reduxUser.avatar,
+          avatarAlt: reduxUser.avatarAlt,
+          joinDate: reduxUser.joinDate,
+          lastLogin: reduxUser.lastLogin,
+          bio: reduxUser.bio,
+          preferences: reduxUser.preferences ? {
+            newsletter: reduxUser.preferences.newsletter ?? false,
+            notifications: reduxUser.preferences.notifications ?? false,
+            marketing: reduxUser.preferences.marketing ?? false
+          } : undefined,
+          addresses: reduxUser.addresses,
+        });
+
+        // Load addresses from Firebase if not in Redux
+        if (!reduxUser.addresses || reduxUser.addresses.length === 0) {
+          const userAddresses = await userService.getAddresses(userId);
+          setUser((prev) => prev ? { ...prev, addresses: userAddresses } : null);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
   }, [router, reduxUser]);
 
   // Save changes handler
   const handleSaveChanges = async () => {
+    if (!user || !auth.currentUser) return;
+
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const userId = auth.currentUser.uid;
+
+      // Update user document in Firestore
+      await setDoc(
+        doc(db, 'users', userId),
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          dateOfBirth: user.dateOfBirth,
+          avatar: user.avatar || null,
+          avatarAlt: user.avatarAlt || null,
+          joinDate: user.joinDate,
+          lastLogin: user.lastLogin,
+          bio: user.bio,
+          preferences: user.preferences,
+          addresses: user.addresses || []
+        },
+        { merge: true }
+      );
 
       // Update Redux store - convert User to UserData format
       dispatch(updateUser({
@@ -163,14 +174,25 @@ const ProfileDetails = () => {
   };
 
   // Update addresses
-  const updateAddresses = (addresses: Address[]) => {
-    setUser((prev) => ({ ...prev, addresses }));
+  const updateAddresses = async (addresses: Address[]) => {
+    if (!auth.currentUser) return;
+
+    setUser((prev) => prev ? { ...prev, addresses } : null);
     setHasUnsavedChanges(true);
+
+    // Save to Firebase immediately
+    try {
+      await userService.updateAddresses(auth.currentUser.uid, addresses);
+      dispatch(updateUser({ addresses }));
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error('Error saving addresses:', error);
+    }
   };
 
   // Header handlers
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(signOutUser()).unwrap();
     router.push('/sign-in');
   };
 
@@ -200,6 +222,24 @@ const ProfileDetails = () => {
     avatar: user.avatar || undefined,
     avatarAlt: user.avatarAlt || undefined
   } : null;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar user={navbarUser} />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <Icon name="Loader2" size={48} className="animate-spin text-primary mx-auto mb-4" />
+            <p className="text-lg font-body text-muted-foreground">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">

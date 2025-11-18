@@ -12,7 +12,11 @@ import PaymentMethodsSection from '@/components/user-account/payment-methods-sec
 import Icon, { type IconProps } from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { updateUser, logout } from '@/lib/store/slices/authSlice';
+import { updateUser, signOutUser } from '@/lib/store/slices/authSlice';
+import { auth, db } from '@/lib/firebase/config';
+import { orderService } from '@/lib/firebase/orders';
+import { userService } from '@/lib/firebase/user';
+import { doc, setDoc } from 'firebase/firestore';
 
 interface User {
   id: string;
@@ -114,228 +118,24 @@ const UserAccount = () => {
   const reduxUser = useAppSelector((state) => state.auth.user);
   const [activeTab, setActiveTab] = useState<string>('profile');
   
-  // Initialize user from Redux or use defaults
-  const [user, setUser] = useState<User>(() => {
-    if (reduxUser) {
-      return {
-        id: String(reduxUser.id || "user_001"),
-        name: reduxUser.name || "Sarah Johnson",
-        email: reduxUser.email || "sarah.johnson@email.com",
-        phone: reduxUser.phone || "(555) 123-4567",
-        dateOfBirth: reduxUser.dateOfBirth || "1990-05-15",
-        joinDate: reduxUser.joinDate || "2023-03-15",
-        totalOrders: 24,
-        favoriteItems: 8
-      };
-    }
-    return {
-      id: "user_001",
-      name: "Sarah Johnson",
-      email: "sarah.johnson@email.com",
-      phone: "(555) 123-4567",
-      dateOfBirth: "1990-05-15",
-      joinDate: "2023-03-15",
-      totalOrders: 24,
-      favoriteItems: 8
-    };
-  });
-
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: "addr_001",
-      label: "Home",
-      street: "123 Oak Street",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      isDefault: true
-    },
-    {
-      id: "addr_002",
-      label: "Work",
-      street: "456 Business Ave",
-      city: "New York",
-      state: "NY",
-      zipCode: "10002",
-      isDefault: false
-    }
-  ]);
-
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "ORD001",
-      date: "2024-10-12T18:30:00Z",
-      status: "Delivered",
-      total: 28.95,
-      subtotal: 24.95,
-      deliveryFee: 2.50,
-      tax: 1.50,
-      items: [
-        {
-          id: "item_001",
-          name: "Classic Burger",
-          quantity: 1,
-          price: 12.95,
-          image: "https://images.unsplash.com/photo-1585508718415-6d83666de492",
-          imageAlt: "Juicy beef burger with lettuce, tomato, and cheese on sesame bun",
-          customizations: ["No onions", "Extra cheese"]
-        },
-        {
-          id: "item_002",
-          name: "Truffle Fries",
-          quantity: 1,
-          price: 8.95,
-          image: "https://images.unsplash.com/photo-1630431343596-dadee2180ba1",
-          imageAlt: "Golden crispy french fries topped with truffle oil and parmesan",
-          customizations: []
-        },
-        {
-          id: "item_003",
-          name: "Chocolate Milkshake",
-          quantity: 1,
-          price: 5.95,
-          image: "https://images.unsplash.com/photo-1660715683649-e381e56eb07a",
-          imageAlt: "Rich chocolate milkshake topped with whipped cream and chocolate chips",
-          customizations: ["Extra whipped cream"]
-        }
-      ],
-      deliveryAddress: {
-        street: "123 Oak Street",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001"
-      }
-    },
-    {
-      id: "ORD002",
-      date: "2024-10-10T19:15:00Z",
-      status: "Delivered",
-      total: 22.45,
-      subtotal: 18.95,
-      deliveryFee: 2.50,
-      tax: 1.00,
-      items: [
-        {
-          id: "item_004",
-          name: "Margherita Pizza",
-          quantity: 1,
-          price: 14.95,
-          image: "https://images.unsplash.com/photo-1703784022146-b72677752ce5",
-          imageAlt: "Traditional margherita pizza with fresh mozzarella, basil, and tomato sauce",
-          customizations: ["Thin crust"]
-        },
-        {
-          id: "item_005",
-          name: "Caesar Salad",
-          quantity: 1,
-          price: 8.95,
-          image: "https://images.unsplash.com/photo-1598268013060-1f5baade2fc0",
-          imageAlt: "Fresh caesar salad with romaine lettuce, croutons, and parmesan cheese",
-          customizations: ["Extra dressing"]
-        }
-      ],
-      deliveryAddress: {
-        street: "456 Business Ave",
-        city: "New York",
-        state: "NY",
-        zipCode: "10002"
-      }
-    },
-    {
-      id: "ORD003",
-      date: "2024-10-08T12:45:00Z",
-      status: "Preparing",
-      total: 35.50,
-      subtotal: 31.50,
-      deliveryFee: 2.50,
-      tax: 1.50,
-      items: [
-        {
-          id: "item_006",
-          name: "Grilled Salmon",
-          quantity: 1,
-          price: 18.95,
-          image: "https://images.unsplash.com/photo-1589898489661-fe21552ad67c",
-          imageAlt: "Perfectly grilled salmon fillet with herbs and lemon on white plate",
-          customizations: ["Medium-well", "Lemon butter sauce"]
-        },
-        {
-          id: "item_007",
-          name: "Garlic Bread",
-          quantity: 2,
-          price: 6.95,
-          image: "https://images.unsplash.com/photo-1619535860434-ba1d8fa12536",
-          imageAlt: "Toasted garlic bread slices with herbs and melted butter",
-          customizations: ["Extra garlic"]
-        }
-      ],
-      deliveryAddress: {
-        street: "123 Oak Street",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001"
-      }
-    }
-  ]);
-
+  // Initialize user from Redux
+  const [user, setUser] = useState<User | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [preferences, setPreferences] = useState<Preferences>({
-    dietary: ["vegetarian"],
+    dietary: [],
     spiceLevel: "medium",
     notifications: {
       orderUpdates: true,
       promotions: true,
       newMenuItems: false,
-      emailNewsletter: true,
+      emailNewsletter: false,
       smsNotifications: false
     },
-    favoriteItems: [
-      {
-        id: "fav_001",
-        name: "Classic Burger",
-        category: "Burgers",
-        image: "https://images.unsplash.com/photo-1585508718415-6d83666de492",
-        imageAlt: "Juicy beef burger with lettuce, tomato, and cheese on sesame bun"
-      },
-      {
-        id: "fav_002",
-        name: "Truffle Fries",
-        category: "Sides",
-        image: "https://images.unsplash.com/photo-1630431343596-dadee2180ba1",
-        imageAlt: "Golden crispy french fries topped with truffle oil and parmesan"
-      }
-    ]
+    favoriteItems: []
   });
-
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: "pm_001",
-      type: "Visa",
-      lastFour: "4242",
-      expiryDate: "12/26",
-      cardholderName: "Sarah Johnson",
-      isDefault: true,
-      billingAddress: {
-        street: "123 Oak Street",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001"
-      }
-    },
-    {
-      id: "pm_002",
-      type: "Mastercard",
-      lastFour: "8888",
-      expiryDate: "08/25",
-      cardholderName: "Sarah Johnson",
-      isDefault: false,
-      billingAddress: {
-        street: "123 Oak Street",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001"
-      }
-    }
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const tabs: Tab[] = [
     { id: 'profile', label: 'Profile', icon: 'User' },
@@ -346,23 +146,130 @@ const UserAccount = () => {
     { id: 'security', label: 'Security', icon: 'Shield' }
   ];
 
-  // Check authentication on component mount
+  // Check authentication and load user data
   useEffect(() => {
     if (!reduxUser) {
       router.push('/sign-in');
+      return;
     }
+
+    const loadUserData = async () => {
+      if (!auth.currentUser) {
+        router.push('/sign-in');
+        return;
+      }
+
+      setIsLoading(true);
+      const userId = auth.currentUser.uid;
+
+      try {
+        // Load user profile
+        setUser({
+          id: String(reduxUser.id || userId),
+          name: reduxUser.name || '',
+          email: reduxUser.email || '',
+          phone: reduxUser.phone || '',
+          dateOfBirth: reduxUser.dateOfBirth || '',
+          joinDate: reduxUser.joinDate || new Date().toISOString(),
+          totalOrders: 0, // Will be calculated from orders
+          favoriteItems: 0 // Will be calculated from preferences
+        });
+
+        // Load addresses
+        const userAddresses = await userService.getAddresses(userId);
+        setAddresses(userAddresses);
+
+        // Load orders
+        const userOrders = await orderService.getUserOrders(userId);
+        // Convert Order format to local Order format
+        const convertedOrders: Order[] = userOrders.map((order) => ({
+          id: order.id,
+          date: order.createdAt,
+          status: order.status,
+          total: order.total,
+          subtotal: order.subtotal,
+          deliveryFee: order.deliveryFee,
+          tax: order.tax,
+          items: order.items.map((item) => ({
+            id: String(item.id),
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.image,
+            imageAlt: item.imageAlt,
+            customizations: item.customizations
+          })),
+          deliveryAddress: order.deliveryAddress
+        }));
+        setOrders(convertedOrders);
+
+        // Update totalOrders
+        setUser((prev) => prev ? { ...prev, totalOrders: convertedOrders.length } : null);
+
+        // Load preferences
+        const userPrefs = await userService.getPreferences(userId);
+        setPreferences({
+          dietary: userPrefs.dietary || [],
+          spiceLevel: userPrefs.spiceLevel || "medium",
+          notifications: {
+            orderUpdates: userPrefs.notifications?.orderUpdates ?? true,
+            promotions: userPrefs.notifications?.promotions ?? true,
+            newMenuItems: userPrefs.notifications?.newMenuItems ?? false,
+            emailNewsletter: userPrefs.notifications?.emailNewsletter ?? false,
+            smsNotifications: userPrefs.notifications?.smsNotifications ?? false
+          },
+          favoriteItems: userPrefs.favoriteItems || []
+        });
+
+        // Update favoriteItems count
+        setUser((prev) => prev ? { 
+          ...prev, 
+          favoriteItems: userPrefs.favoriteItems?.length || 0 
+        } : null);
+
+        // Load payment methods
+        const userPaymentMethods = await userService.getPaymentMethods(userId);
+        setPaymentMethods(userPaymentMethods);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
   }, [router, reduxUser]);
 
   // Profile handlers
-  const handleUpdateProfile = (updatedData: Partial<User>): void => {
-    setUser((prev) => ({ ...prev, ...updatedData }));
-    // Update Redux store
-    dispatch(updateUser(updatedData));
-    console.log('Profile updated:', updatedData);
+  const handleUpdateProfile = async (updatedData: Partial<User>): Promise<void> => {
+    if (!auth.currentUser) return;
+
+    setUser((prev) => prev ? { ...prev, ...updatedData } : null);
+
+    // Update Firestore
+    try {
+      const userId = auth.currentUser.uid;
+      await setDoc(
+        doc(db, 'users', userId),
+        {
+          ...updatedData,
+          id: user?.id || userId
+        },
+        { merge: true }
+      );
+
+      // Update Redux store
+      dispatch(updateUser(updatedData));
+      console.log('Profile updated:', updatedData);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   // Address handlers
-  const handleAddAddress = (newAddress: Omit<Address, 'id'>): void => {
+  const handleAddAddress = async (newAddress: Omit<Address, 'id'>): Promise<void> => {
+    if (!auth.currentUser) return;
+
     const address: Address = {
       ...newAddress,
       id: `addr_${Date.now()}`
@@ -373,19 +280,54 @@ const UserAccount = () => {
       setAddresses((prev) => prev.map((addr) => ({ ...addr, isDefault: false })));
     }
 
-    setAddresses((prev) => [...prev, address]);
+    const updatedAddresses = [...addresses, address];
+    setAddresses(updatedAddresses);
+
+    // Save to Firebase
+    try {
+      await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
+      dispatch(updateUser({ addresses: updatedAddresses }));
+    } catch (error) {
+      console.error('Error saving address:', error);
+      // Revert on error
+      setAddresses(addresses);
+    }
   };
 
-  const handleUpdateAddress = (addressId: string, updatedData: Partial<Address>): void => {
-    setAddresses((prev) => prev.map((addr) =>
+  const handleUpdateAddress = async (addressId: string, updatedData: Partial<Address>): Promise<void> => {
+    if (!auth.currentUser) return;
+
+    const updatedAddresses = addresses.map((addr) =>
       addr.id === addressId
         ? { ...addr, ...updatedData }
         : updatedData.isDefault ? { ...addr, isDefault: false } : addr
-    ));
+    );
+    setAddresses(updatedAddresses);
+
+    // Save to Firebase
+    try {
+      await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
+      dispatch(updateUser({ addresses: updatedAddresses }));
+    } catch (error) {
+      console.error('Error updating address:', error);
+      setAddresses(addresses);
+    }
   };
 
-  const handleDeleteAddress = (addressId: string): void => {
-    setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
+  const handleDeleteAddress = async (addressId: string): Promise<void> => {
+    if (!auth.currentUser) return;
+
+    const updatedAddresses = addresses.filter((addr) => addr.id !== addressId);
+    setAddresses(updatedAddresses);
+
+    // Save to Firebase
+    try {
+      await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
+      dispatch(updateUser({ addresses: updatedAddresses }));
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      setAddresses(addresses);
+    }
   };
 
   // Order handlers
@@ -395,39 +337,89 @@ const UserAccount = () => {
   };
 
   const handleViewOrderDetails = (order: Order): void => {
-    console.log('Viewing order details:', order);
+    router.push(`/order-tracking?id=${order.id}`);
   };
 
   // Preferences handlers
-  const handleUpdatePreferences = (updatedPreferences: Preferences): void => {
+  const handleUpdatePreferences = async (updatedPreferences: Preferences): Promise<void> => {
+    if (!auth.currentUser) return;
+
     setPreferences(updatedPreferences);
-    console.log('Preferences updated:', updatedPreferences);
+
+    // Save to Firebase
+    try {
+      await userService.updatePreferences(auth.currentUser.uid, {
+        dietary: updatedPreferences.dietary,
+        spiceLevel: updatedPreferences.spiceLevel,
+        notifications: updatedPreferences.notifications,
+        favoriteItems: updatedPreferences.favoriteItems
+      });
+      dispatch(updateUser({ preferences: updatedPreferences }));
+      
+      // Update favoriteItems count
+      setUser((prev) => prev ? { 
+        ...prev, 
+        favoriteItems: updatedPreferences.favoriteItems?.length || 0 
+      } : null);
+    } catch (error) {
+      console.error('Error updating preferences:', error);
+    }
   };
 
   // Payment handlers
-  const handleAddPaymentMethod = (newPaymentMethod: Omit<PaymentMethod, 'id'>): void => {
-    // If this is set as default, remove default from others
-    if (newPaymentMethod.isDefault) {
-      setPaymentMethods((prev) => prev.map((pm) => ({ ...pm, isDefault: false })));
-    }
+  const handleAddPaymentMethod = async (newPaymentMethod: Omit<PaymentMethod, 'id'>): Promise<void> => {
+    if (!auth.currentUser) return;
 
     const paymentMethod: PaymentMethod = {
       ...newPaymentMethod,
       id: `pm_${Date.now()}`
     };
 
+    // If this is set as default, remove default from others
+    if (paymentMethod.isDefault) {
+      setPaymentMethods((prev) => prev.map((pm) => ({ ...pm, isDefault: false })));
+    }
+
     setPaymentMethods((prev) => [...prev, paymentMethod]);
+
+    // Save to Firebase
+    try {
+      await userService.addPaymentMethod(auth.currentUser.uid, paymentMethod);
+    } catch (error) {
+      console.error('Error adding payment method:', error);
+      setPaymentMethods(paymentMethods);
+    }
   };
 
-  const handleDeletePaymentMethod = (paymentMethodId: string): void => {
-    setPaymentMethods((prev) => prev.filter((pm) => pm.id !== paymentMethodId));
+  const handleDeletePaymentMethod = async (paymentMethodId: string): Promise<void> => {
+    if (!auth.currentUser) return;
+
+    const updatedMethods = paymentMethods.filter((pm) => pm.id !== paymentMethodId);
+    setPaymentMethods(updatedMethods);
+
+    // Save to Firebase
+    try {
+      await userService.deletePaymentMethod(auth.currentUser.uid, paymentMethodId);
+    } catch (error) {
+      console.error('Error deleting payment method:', error);
+      setPaymentMethods(paymentMethods);
+    }
   };
 
-  const handleSetDefaultPaymentMethod = (paymentMethodId: string): void => {
+  const handleSetDefaultPaymentMethod = async (paymentMethodId: string): Promise<void> => {
+    if (!auth.currentUser) return;
+
     setPaymentMethods((prev) => prev.map((pm) => ({
       ...pm,
       isDefault: pm.id === paymentMethodId
     })));
+
+    // Save to Firebase
+    try {
+      await userService.setDefaultPaymentMethod(auth.currentUser.uid, paymentMethodId);
+    } catch (error) {
+      console.error('Error setting default payment method:', error);
+    }
   };
 
   // Security handlers
@@ -440,13 +432,17 @@ const UserAccount = () => {
   };
 
   // Header handlers
-  const handleLogout = (): void => {
-    dispatch(logout());
+  const handleLogout = async (): Promise<void> => {
+    await dispatch(signOutUser()).unwrap();
     router.push('/sign-in');
   };
 
   const handleAccountClick = (action: string): void => {
-    if (action === 'logout') handleLogout();
+    if (action === 'logout') {
+      handleLogout().catch((error) => {
+        console.error('Logout error:', error);
+      });
+    }
   };
 
   const renderTabContent = (): React.ReactNode => {
@@ -515,6 +511,24 @@ const UserAccount = () => {
     email: user.email
   } : null;
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar user={navbarUser} />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <Icon name="Loader2" size={48} className="animate-spin text-primary mx-auto mb-4" />
+            <p className="text-lg font-body text-muted-foreground">Loading your account...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar
@@ -536,7 +550,7 @@ const UserAccount = () => {
               <div>
                 <h1 className="text-3xl font-heading font-bold text-foreground">My Account</h1>
                 <p className="text-lg font-body text-muted-foreground">
-                  Welcome back, {user.name}
+                  Welcome back, {user.name || 'User'}
                 </p>
               </div>
             </div>

@@ -8,7 +8,7 @@ import LoginForm from '@/components/login/login-form';
 import SocialLogin from '@/components/login/social-login';
 import Icon from '@/components/ui/app-icon';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { setUser, logout, type UserData } from '@/lib/store/slices/authSlice';
+import { setUser, signOutUser, signInUser, signInWithGoogle } from '@/lib/store/slices/authSlice';
 
 const LoginPage = () => {
   const dispatch = useAppDispatch();
@@ -24,43 +24,53 @@ const LoginPage = () => {
     }
   }, []);
 
-  const handleLogin = async (userData: UserData, rememberMe = false) => {
+  const handleLogin = async (credentials: { email: string; password: string }, rememberMe = false) => {
     setIsLoading(true);
     
     try {
-      // Simulate login process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store user data in Redux
-      const userToStore = {
-        ...userData,
-        loginTime: new Date()?.toISOString(),
-        rememberMe
-      };
-      
-      dispatch(setUser(userToStore));
+      // Use Firebase auth
+      await dispatch(signInUser({
+        email: credentials.email,
+        password: credentials.password,
+      })).unwrap();
       
       // Success notification could be added here
-      console.log('Login successful:', userToStore);
+      console.log('Login successful');
       
       // Redirect after successful login
       const redirectTo = localStorage.getItem('loginRedirect') || '/';
       localStorage.removeItem('loginRedirect');
       router.push(redirectTo);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      // Error is handled by Redux, you can access it via state.auth.error
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialLogin = async (userData: UserData) => {
-    await handleLogin(userData, false);
+  const handleSocialLogin = async (provider: string) => {
+    setIsLoading(true);
+    
+    try {
+      if (provider === 'google') {
+        await dispatch(signInWithGoogle()).unwrap();
+      }
+      
+      // Redirect after successful login
+      const redirectTo = localStorage.getItem('loginRedirect') || '/';
+      localStorage.removeItem('loginRedirect');
+      router.push(redirectTo);
+    } catch (error: any) {
+      console.error('Social login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(signOutUser()).unwrap();
     localStorage.removeItem('loginRedirect');
     // Stay on login page after logout instead of redirecting
   };

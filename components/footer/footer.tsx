@@ -103,7 +103,7 @@ const FooterSection = () => {
             <div className="flex items-center space-x-2 mb-6">
               <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center">
                 <Icon
-                  name="UtensilsCrossed"
+                  name="Salad"
                   size={28}
                   className="text-accent-foreground"
                 />
@@ -183,7 +183,7 @@ const FooterSection = () => {
             <div className="grid sm:grid-cols-2 gap-6">
               {contactInfo.map((info) => (
                 <div key={info.title} className="flex space-x-3">
-                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center shrink-0">
                     <Icon name={info.icon} size={20} className="text-accent" />
                   </div>
                   <div>

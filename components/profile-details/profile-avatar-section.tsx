@@ -103,17 +103,23 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
         {/* Current Avatar Display */}
         <div className="shrink-0">
           <div className="relative">
-            {user.avatar ? (
+            {user.avatar && user.avatar.trim() !== '' ? (
               <img
                 src={user.avatar}
                 alt={user.avatarAlt || `Profile picture of ${user.name || 'user'}`}
                 className="w-32 h-32 rounded-full object-cover border-4 border-border shadow-warm"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-32 h-32 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold shadow-warm">
-                {user.name ? user.name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
+            ) : null}
+            <div 
+              className={`w-32 h-32 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold shadow-warm ${user.avatar && user.avatar.trim() !== '' ? 'hidden' : ''}`}
+            >
+              {user.name ? user.name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
             
             {/* Loading Overlay */}
             {isUploading && (

@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 
 interface SocialLoginProps {
-  onSocialLogin: (userData: any) => Promise<void>;
+  onSocialLogin: (provider: string) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -60,12 +60,9 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
   const handleSocialLogin = async (provider: SocialProvider) => {
     if (isLoading) return;
 
-    // Simulate social login process
     try {
-      // In a real app, this would redirect to OAuth provider
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      await onSocialLogin(provider.mockUser);
+      // Pass provider ID to parent component for Firebase authentication
+      await onSocialLogin(provider.id);
     } catch (error) {
       console.error('Social login error:', error);
     }

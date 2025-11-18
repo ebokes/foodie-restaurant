@@ -4,12 +4,6 @@ import { Button } from "../ui/button";
 const Hero = () => {
   return (
     <section className="overflow-hidden min-h-screen relative">
-      {/* <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/assets/intecontinental-dish.webp')",
-        }}
-      > */}
       <div>
         <Image
           src={"/assets/intecontinental-dish.webp"}
@@ -18,7 +12,6 @@ const Hero = () => {
           className="object-cover absolute inset-0 z-20"
         />
         <div className="absolute inset-0 bg-black opacity-50 z-30"></div>
-        {/* </div> */}
       </div>
       <div className="relative"> </div>
       <div className="max-w-3xl mx-auto z-40 relative text-center py-32 px-4 sm:px-6 lg:px-8">
@@ -43,7 +36,7 @@ const Hero = () => {
             ⚡ Fresh ingredients daily
           </span>
           <span className="bg-orange-500/80 px-4 py-2 rounded-full backdrop-blur-sm">
-            🍽️ Authentic Mediterranean flavors
+            🍽️ Tasty food for you
           </span>
         </div>
         <p className="text-lg text-orange-200 mt-4 font-medium">

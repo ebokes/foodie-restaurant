@@ -10,13 +10,15 @@ import { menuItems, categories } from "@/lib/constants";
 import { Filters, MenuItem } from "@/types/menu-catalog";
 import FooterSection from "@/components/footer/footer";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { addItem } from "@/lib/store/slices/cartSlice";
+import { addItem, addCartItem } from "@/lib/store/slices/cartSlice";
+import { auth } from "@/lib/firebase/config";
 
 
 const MenuCatalog = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
+  const user = useAppSelector((state) => state.auth.user);
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -46,7 +48,7 @@ const MenuCatalog = () => {
 
   const handleAddToCart = async (item: MenuItem) => {
     try {
-      dispatch(addItem({
+      const cartItem = {
         id: item.id,
         name: item.name,
         price: item.price,
@@ -55,7 +57,24 @@ const MenuCatalog = () => {
         imageAlt: item.imageAlt,
         customizations: [],
         specialRequests: null
-      }));
+      };
+
+      // Optimistic update for immediate UI feedback
+      dispatch(addItem(cartItem));
+
+      // If user is logged in, sync with Firebase
+      if (user && auth.currentUser) {
+        try {
+          await dispatch(addCartItem({
+            userId: auth.currentUser.uid,
+            item: cartItem
+          })).unwrap();
+        } catch (error) {
+          console.error('Error syncing cart with Firebase:', error);
+          // Rollback optimistic update if Firebase sync fails
+          // In production, you might want to show an error to the user
+        }
+      }
 
       console.log("Added to cart:", item);
     } catch (error) {

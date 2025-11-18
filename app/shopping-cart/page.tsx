@@ -10,14 +10,24 @@ import PromoCodeSection from '@/components/shopping-cart/promo-code-section';
 import Icon from '@/components/ui/app-icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { updateQuantity, removeItem, applyPromo, removePromo, type PromoCode } from '@/lib/store/slices/cartSlice';
+import { updateQuantity, removeItem, applyPromo, removePromo, updateCartQuantity, removeCartItem, fetchCart, type PromoCode } from '@/lib/store/slices/cartSlice';
+import { auth } from '@/lib/firebase/config';
+import { useEffect } from 'react';
 
 const ShoppingCart = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const appliedPromo = useAppSelector((state) => state.cart.appliedPromo);
+  const user = useAppSelector((state) => state.auth.user);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+
+  // Load cart from Firebase when user is logged in
+  useEffect(() => {
+    if (user && auth.currentUser) {
+      dispatch(fetchCart(auth.currentUser.uid));
+    }
+  }, [user, dispatch]);
 
   // Available promo codes
   const availablePromoCodes: Record<string, PromoCode> = {
@@ -26,12 +36,39 @@ const ShoppingCart = () => {
     'WELCOME15': { code: 'WELCOME15', discount: 0.15, description: '15% off welcome offer', minOrder: 15 }
   };
 
-  const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
+  const handleUpdateQuantity = async (itemId: number, newQuantity: number) => {
+    // Optimistic update for immediate UI feedback
     dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+
+    // If user is logged in, sync with Firebase
+    if (user && auth.currentUser) {
+      try {
+        await dispatch(updateCartQuantity({
+          userId: auth.currentUser.uid,
+          itemId,
+          quantity: newQuantity
+        })).unwrap();
+      } catch (error) {
+        console.error('Error updating cart in Firebase:', error);
+      }
+    }
   };
 
-  const handleRemoveItem = (itemId: number) => {
+  const handleRemoveItem = async (itemId: number) => {
+    // Optimistic update for immediate UI feedback
     dispatch(removeItem(itemId));
+
+    // If user is logged in, sync with Firebase
+    if (user && auth.currentUser) {
+      try {
+        await dispatch(removeCartItem({
+          userId: auth.currentUser.uid,
+          itemId
+        })).unwrap();
+      } catch (error) {
+        console.error('Error removing item from Firebase:', error);
+      }
+    }
   };
 
   const handleModifyItem = (itemId: number) => {

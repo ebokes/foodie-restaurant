@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/app-icon';
 
 interface RegistrationFormProps {
-  onRegister: (userData: any) => Promise<void>;
+  onRegister: (registrationData: { email: string; password: string; name: string; phone?: string }) => Promise<void>;
   preFilledEmail?: string;
 }
 
@@ -160,25 +160,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onRegister, preFill
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock successful registration
-      const newUser = {
-        id: Date.now(),
-        name: formData.fullName,
+      // Pass registration data to parent component for Firebase authentication
+      await onRegister({
         email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
         phone: formData.phone,
-        createdAt: new Date().toISOString()
-      };
+      });
 
-      await onRegister(newUser);
-
-      // Navigate to login or home
-      router.push('/sign-in');
+      // Redirect is now handled by the parent component after successful registration
     } catch (error) {
       setErrors({ submit: 'Registration failed. Please try again.' });
-    } finally {
       setIsLoading(false);
     }
   };
