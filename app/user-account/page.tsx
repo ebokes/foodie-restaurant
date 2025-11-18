@@ -446,6 +446,10 @@ const UserAccount = () => {
   };
 
   const renderTabContent = (): React.ReactNode => {
+    if (!user) {
+      return null;
+    }
+
     switch (activeTab) {
       case 'profile':
         return (

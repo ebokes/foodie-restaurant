@@ -97,7 +97,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false }) => 
       {errors.general && (
         <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
           <div className="flex items-start space-x-3">
-            <Icon name="AlertCircle" size={20} className="text-error mt-0.5 flex-shrink-0" />
+            <Icon name="AlertCircle" size={20} className="text-error mt-0.5 shrink-0" />
             <p className="text-sm font-body text-error">{errors.general}</p>
           </div>
         </div>

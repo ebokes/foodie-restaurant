@@ -78,6 +78,25 @@ const ProfileDetails = () => {
 
       try {
         // Load user profile from Redux
+        const reduxPreferences = reduxUser.preferences;
+        const normalizedPreferences = reduxPreferences ? {
+          newsletter: reduxPreferences.newsletter ?? false,
+          notifications: (() => {
+            if (typeof reduxPreferences.notifications === 'boolean' || reduxPreferences.notifications === undefined) {
+              return reduxPreferences.notifications ?? false;
+            }
+            const detailed = reduxPreferences.notifications;
+            return Boolean(
+              detailed?.orderUpdates ||
+              detailed?.promotions ||
+              detailed?.newMenuItems ||
+              detailed?.emailNewsletter ||
+              detailed?.smsNotifications
+            );
+          })(),
+          marketing: reduxPreferences.marketing ?? false
+        } : undefined;
+
         setUser({
           id: reduxUser.id,
           name: reduxUser.name,
@@ -89,11 +108,7 @@ const ProfileDetails = () => {
           joinDate: reduxUser.joinDate,
           lastLogin: reduxUser.lastLogin,
           bio: reduxUser.bio,
-          preferences: reduxUser.preferences ? {
-            newsletter: reduxUser.preferences.newsletter ?? false,
-            notifications: reduxUser.preferences.notifications ?? false,
-            marketing: reduxUser.preferences.marketing ?? false
-          } : undefined,
+          preferences: normalizedPreferences,
           addresses: reduxUser.addresses,
         });
 

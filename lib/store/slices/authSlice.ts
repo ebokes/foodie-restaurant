@@ -1,6 +1,22 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService } from '@/lib/firebase/auth';
 
+interface DetailedNotificationPreferences {
+  orderUpdates?: boolean;
+  promotions?: boolean;
+  newMenuItems?: boolean;
+  emailNewsletter?: boolean;
+  smsNotifications?: boolean;
+}
+
+interface FavoriteItem {
+  id: string;
+  name: string;
+  category: string;
+  image: string;
+  imageAlt: string;
+}
+
 export interface UserData {
   id: number | string;
   name: string;
@@ -18,8 +34,14 @@ export interface UserData {
   provider?: string;
   preferences?: {
     newsletter?: boolean;
-    notifications?: boolean;
+    /**
+     * Legacy boolean flag or detailed notification preferences
+     */
+    notifications?: boolean | DetailedNotificationPreferences;
     marketing?: boolean;
+    dietary?: string[];
+    spiceLevel?: string;
+    favoriteItems?: FavoriteItem[];
   };
   addresses?: Array<{
     id: string;
