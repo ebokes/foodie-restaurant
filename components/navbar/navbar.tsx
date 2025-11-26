@@ -349,7 +349,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       </button>
                       <button
                         onClick={() => {
-                          router.push('/table-reservation');
+                          router.push('/my-reservations');
                           setIsUserDropdownOpen(false);
                         }}
                         className="w-full flex items-center space-x-3 px-4 py-2 text-sm font-body text-foreground hover:bg-muted transition-colors duration-200"
@@ -532,7 +532,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   </button>
                   <button
               onClick={() => {
-                      router.push('/table-reservation');
+                      router.push('/my-reservations');
                       setIsMobileMenuOpen(false);
                     }}
                     className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium text-foreground hover:text-primary hover:bg-muted transition-all duration-200"

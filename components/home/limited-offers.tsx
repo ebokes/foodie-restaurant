@@ -96,7 +96,8 @@ const LimitedOffers = () => {
 
                 {/* Action Button */}
                 <Button
-
+                  as="link"
+                  href="/menu-catalog"
                   variant="tertiary"
                   size="sm"
                   iconName="ArrowRight"
@@ -112,6 +113,8 @@ const LimitedOffers = () => {
         {/* View All Deals Button */}
         <div className="text-center mt-12">
           <Button
+            as="link"
+            href="/menu-catalog"
             variant="secondary"
             size="lg"
             iconName="Gift"

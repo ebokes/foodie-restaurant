@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Navbar from '@/components/navbar/navbar';
-import OrderProgressTimeline from '@/components/order-tracking/order-progress-timeline';
-import OrderSummaryCard from '@/components/order-tracking/order-summary-card';
-import DeliveryTracking from '@/components/order-tracking/delivery-tracking';
-import OrderDetails from '@/components/order-tracking/order-details';
-import OrderActions from '@/components/order-tracking/order-actions';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Navbar from "@/components/navbar/navbar";
+import OrderProgressTimeline from "@/components/order-tracking/order-progress-timeline";
+import OrderSummaryCard from "@/components/order-tracking/order-summary-card";
+import DeliveryTracking from "@/components/order-tracking/delivery-tracking";
+import OrderDetails from "@/components/order-tracking/order-details";
+import OrderActions from "@/components/order-tracking/order-actions";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { orderService } from "@/lib/firebase/orders";
 
 interface OrderItem {
   id: number;
@@ -55,7 +56,7 @@ interface TrackingLocation {
 }
 
 interface Delivery {
-  type: 'delivery' | 'pickup';
+  type: "delivery" | "pickup";
   address: DeliveryAddress;
   driver: Driver;
   trackingLocation: TrackingLocation;
@@ -88,157 +89,115 @@ interface OrderData {
   paymentMethod: PaymentMethod;
 }
 
-interface User {
-  id?: number;
-  name?: string;
-  email?: string;
-}
-
 const OrderTracking = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [trackingError, setTrackingError] = useState<string | null>(null);
-  const [cartCount, setCartCount] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
 
-  // Mock user data - in real app this would come from auth context
+  // Fetch order data
   useEffect(() => {
-    // Simulate checking for logged in user
-    const mockUser = localStorage.getItem('currentUser');
-    if (mockUser) {
-      setUser(JSON.parse(mockUser));
-    }
-
-    // Simulate cart count from localStorage
-    const mockCartCount = localStorage.getItem('cartCount');
-    if (mockCartCount) {
-      setCartCount(parseInt(mockCartCount, 10));
-    }
-  }, []);
-
-  // Mock order data - in real app would fetch from API using order ID
-  const mockOrderData: OrderData = {
-    id: searchParams?.get('orderId') || '#ORD-2024-001',
-    status: 'preparing', // order_confirmed, preparing, ready_pickup, out_for_delivery, completed
-    orderDate: '2025-01-15T12:30:00Z',
-    estimatedDelivery: '2025-01-15T13:15:00Z',
-    actualDelivery: null,
-    total: 34.97,
-    items: [
-    {
-      id: 1,
-      name: "Classic Beef Burger",
-      price: 12.99,
-      quantity: 2,
-      image: "https://images.unsplash.com/photo-1585508718415-6d83666de492",
-      imageAlt: "Juicy beef burger with lettuce, tomato, and cheese on sesame bun",
-      customizations: ["Extra cheese", "No onions"]
-    },
-    {
-      id: 2,
-      name: "Truffle Fries",
-      price: 8.99,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1630431343596-dadee2180ba1",
-      imageAlt: "Golden crispy fries with truffle oil and parmesan cheese",
-      customizations: ["Large size"]
-    }],
-
-    delivery: {
-      type: 'delivery', // delivery or pickup
-      address: {
-        street: '123 Main Street',
-        apartment: 'Apt 4B',
-        city: 'New York',
-        state: 'NY',
-        zipCode: '10001',
-        instructions: 'Ring doorbell twice. Leave at door if no answer.'
-      },
-      driver: {
-        name: 'Alex Rodriguez',
-        phone: '(555) 123-4567',
-        photo: "https://images.unsplash.com/photo-1659353741091-e0274bb50905",
-        photoAlt: 'Delivery driver Alex Rodriguez smiling while holding food order',
-        vehicleType: 'Bike',
-        rating: 4.9
-      },
-      trackingLocation: {
-        lat: 40.7128,
-        lng: -74.0060,
-        address: '5th Avenue & 42nd St'
-      }
-    },
-    restaurant: {
-      name: 'Foodies Restaurant',
-      address: '456 Food Street, NY 10002',
-      phone: '(555) 987-6543'
-    },
-    timeline: [
-    {
-      status: 'order_confirmed',
-      timestamp: '2025-01-15T12:30:00Z',
-      title: 'Order Confirmed',
-      description: 'Your order has been received and confirmed',
-      completed: true
-    },
-    {
-      status: 'preparing',
-      timestamp: '2025-01-15T12:35:00Z',
-      title: 'Preparing Your Order',
-      description: 'Our chefs are preparing your delicious meal',
-      completed: true,
-      active: true
-    },
-    {
-      status: 'ready_pickup',
-      timestamp: null,
-      title: 'Ready for Pickup',
-      description: 'Order is ready and waiting for driver pickup',
-      completed: false
-    },
-    {
-      status: 'out_for_delivery',
-      timestamp: null,
-      title: 'Out for Delivery',
-      description: 'Your order is on its way to you',
-      completed: false
-    },
-    {
-      status: 'completed',
-      timestamp: null,
-      title: 'Delivered',
-      description: 'Your order has been delivered. Enjoy your meal!',
-      completed: false
-    }],
-
-    specialInstructions: 'Medium rare patty. Extra napkins please.',
-    paymentMethod: {
-      type: 'card',
-      lastFour: '4242',
-      brand: 'Visa'
-    }
-  };
-
-  useEffect(() => {
-    // Simulate API call to fetch order data
     const fetchOrderData = async () => {
+      let orderId = searchParams?.get("orderId");
+
+      // Fallback to localStorage if no orderId in URL
+      if (!orderId) {
+        const savedOrderId = localStorage.getItem("lastOrderId");
+        if (savedOrderId) {
+          orderId = savedOrderId;
+          // Update URL to include orderId without reloading
+          const newUrl = `/order-tracking?orderId=${orderId}`;
+          window.history.replaceState(
+            { ...window.history.state, as: newUrl, url: newUrl },
+            "",
+            newUrl
+          );
+        }
+      }
+
+      if (!orderId) {
+        setTrackingError("No order ID provided");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setTrackingError(null);
 
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const order = await orderService.getOrder(orderId);
 
-        // Simulate potential error (5% chance)
-        if (Math.random() < 0.05) {
-          throw new Error('Order not found');
+        if (!order) {
+          throw new Error("Order not found");
         }
 
-        setOrderData(mockOrderData);
+        // Map Firestore order to component state structure
+        const mappedOrder: OrderData = {
+          id: order.id,
+          status: order.status,
+          orderDate: order.createdAt,
+          // Estimate delivery 45 mins from creation
+          estimatedDelivery: new Date(
+            new Date(order.createdAt).getTime() + 45 * 60000
+          ).toISOString(),
+          actualDelivery: null,
+          total: order.total,
+          items: order.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            imageAlt: item.imageAlt,
+            customizations: item.customizations,
+          })),
+          delivery: {
+            type: "delivery",
+            address: {
+              street: order.deliveryAddress.street,
+              city: order.deliveryAddress.city,
+              state: order.deliveryAddress.state,
+              zipCode: order.deliveryAddress.zipCode,
+            },
+            // Mock driver data as it's not in the order model yet
+            driver: {
+              name: "Alex Rodriguez",
+              phone: "(555) 123-4567",
+              photo:
+                "https://images.unsplash.com/photo-1659353741091-e0274bb50905",
+              photoAlt: "Delivery driver Alex Rodriguez",
+              vehicleType: "Bike",
+              rating: 4.9,
+            },
+            // Mock tracking location
+            trackingLocation: {
+              lat: 40.7128,
+              lng: -74.006,
+              address: "5th Avenue & 42nd St",
+            },
+          },
+          restaurant: {
+            name: "Foodies Restaurant",
+            address: "456 Food Street, NY 10002",
+            phone: "(555) 987-6543",
+          },
+          timeline: order.timeline || [],
+          specialInstructions: null,
+          paymentMethod: {
+            type: order.paymentMethod?.type || "card",
+            lastFour: order.paymentMethod?.lastFour || "4242",
+            brand: "Visa",
+          },
+        };
+
+        setOrderData(mappedOrder);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load order details';
+        console.error("Error fetching order:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to load order details";
         setTrackingError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -246,67 +205,103 @@ const OrderTracking = () => {
     };
 
     fetchOrderData();
+    fetchOrderData();
   }, [searchParams]);
+
+  // Simulate order progress
+  useEffect(() => {
+    if (!orderData || orderData.status === "completed") return;
+
+    const statuses = [
+      "order_confirmed",
+      "preparing",
+      "ready_for_pickup",
+      "out_for_delivery",
+      "completed",
+    ];
+
+    const currentStatusIndex = statuses.indexOf(orderData.status);
+    if (currentStatusIndex === -1 || currentStatusIndex === statuses.length - 1)
+      return;
+
+    // Advance to next status after 5 seconds
+    const timer = setTimeout(() => {
+      const nextStatus = statuses[currentStatusIndex + 1];
+
+      setOrderData((prev) => {
+        if (!prev) return null;
+
+        const now = new Date().toISOString();
+        const updatedTimeline = prev.timeline.map((item) => {
+          // Mark current/past steps as completed
+          if (statuses.indexOf(item.status) <= currentStatusIndex) {
+            return { ...item, completed: true, active: false };
+          }
+          // Mark next step as active
+          if (item.status === nextStatus) {
+            return { ...item, active: true, timestamp: now };
+          }
+          return item;
+        });
+
+        // If completed, mark the final step as completed too
+        if (nextStatus === "completed") {
+          const finalTimeline = updatedTimeline.map((item) =>
+            item.status === "completed"
+              ? { ...item, completed: true, active: false, timestamp: now }
+              : item
+          );
+          return {
+            ...prev,
+            status: nextStatus,
+            timeline: finalTimeline,
+            actualDelivery: now,
+          };
+        }
+
+        return {
+          ...prev,
+          status: nextStatus,
+          timeline: updatedTimeline,
+        };
+      });
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, [orderData]);
 
   const handleContactSupport = () => {
     // In real app, this would open support chat or phone
-    alert('Opening support chat...\n\nSupport hours: 24/7\nPhone: (555) 123-HELP');
+    alert(
+      "Opening support chat...\n\nSupport hours: 24/7\nPhone: (555) 123-HELP"
+    );
   };
 
   const handleCallRestaurant = () => {
-    window.open(`tel:${orderData?.restaurant?.phone}`, '_self');
+    window.open(`tel:${orderData?.restaurant?.phone}`, "_self");
   };
 
   const handleCallDriver = () => {
     if (orderData?.delivery?.driver?.phone) {
-      window.open(`tel:${orderData?.delivery?.driver?.phone}`, '_self');
+      window.open(`tel:${orderData?.delivery?.driver?.phone}`, "_self");
     }
   };
 
   const handleReorder = () => {
     // Add items back to cart and navigate to cart
-    router.push('/shopping-cart?reorder=' + orderData?.id);
+    router.push("/shopping-cart?reorder=" + orderData?.id);
   };
 
   const handleOrderAgain = () => {
-    router.push('/menu-catalog');
-  };
-
-  const handleCartClick = () => {
-    router.push('/shopping-cart');
-  };
-
-  const handleAccountClick = (action: string) => {
-    switch (action) {
-      case 'login': router.push('/sign-in');
-        break;
-      case 'register': router.push('/sign-up');
-        break;
-      case 'account': router.push('/user-account');
-        break;
-      case 'logout': localStorage.removeItem('currentUser');
-        setUser(null);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleSearch = (searchTerm: string) => {
-    router.push(`/menu-catalog?search=${encodeURIComponent(searchTerm)}`);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    setUser(null);
+    router.push("/menu-catalog");
   };
 
   const isDeliveryInProgress = () => {
-    return orderData?.status === 'out_for_delivery';
+    return orderData?.status === "out_for_delivery";
   };
 
   const isOrderCompleted = () => {
-    return orderData?.status === 'completed';
+    return orderData?.status === "completed";
   };
 
   const getEstimatedTimeRemaining = () => {
@@ -316,11 +311,11 @@ const OrderTracking = () => {
     const estimated = new Date(orderData.estimatedDelivery);
     const diffMs = estimated?.getTime() - now?.getTime();
 
-    if (diffMs <= 0) return 'Any moment now!';
+    if (diffMs <= 0) return "Any moment now!";
 
     const diffMins = Math.ceil(diffMs / (1000 * 60));
     if (diffMins < 60) {
-      return `${diffMins} minute${diffMins !== 1 ? 's' : ''}`;
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""}`;
     }
 
     const diffHours = Math.floor(diffMins / 60);
@@ -331,16 +326,8 @@ const OrderTracking = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar
-          cartCount={cartCount}
-          user={user}
-          onCartClick={handleCartClick}
-          onAccountClick={handleAccountClick}
-          onSearch={handleSearch}
-          onLogout={handleLogout}
-        />
+        <Navbar />
 
-        
         <main>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-center min-h-[400px]">
@@ -356,37 +343,34 @@ const OrderTracking = () => {
             </div>
           </div>
         </main>
-      </div>);
-
+      </div>
+    );
   }
 
   if (trackingError || !orderData) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar
-          cartCount={cartCount}
-          user={user}
-          onCartClick={handleCartClick}
-          onAccountClick={handleAccountClick}
-          onSearch={handleSearch}
-          onLogout={handleLogout}
-        />
+        <Navbar />
 
-        
         <main>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center min-h-[400px] flex items-center justify-center">
               <div className="bg-card rounded-xl shadow-warm border border-border p-8 max-w-md">
-                <Icon name="AlertCircle" size={48} className="text-destructive mx-auto mb-4" />
+                <Icon
+                  name="AlertCircle"
+                  size={48}
+                  className="text-destructive mx-auto mb-4"
+                />
                 <h2 className="font-heading font-semibold text-xl text-foreground mb-2">
                   Order Not Found
                 </h2>
                 <p className="font-body text-muted-foreground mb-6">
-                  {trackingError || 'We couldn\'t find the order you\'re looking for. Please check your order number and try again.'}
+                  {trackingError ||
+                    "We couldn't find the order you're looking for. Please check your order number and try again."}
                 </p>
                 <div className="space-y-3">
                   <Button
-                    onClick={() => router.push('/user-account')}
+                    onClick={() => router.push("/user-account")}
                     variant="default"
                     iconName="User"
                     className="w-full"
@@ -406,22 +390,15 @@ const OrderTracking = () => {
             </div>
           </div>
         </main>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar
-        cartCount={cartCount}
-        user={user}
-        onCartClick={handleCartClick}
-        onAccountClick={handleAccountClick}
-        onSearch={handleSearch}
-        onLogout={handleLogout}
-      />
+      <Navbar />
 
-      <main className='pt-16'>
+      <main className="pt-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8">
@@ -437,10 +414,10 @@ const OrderTracking = () => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Estimated Time */}
-              {!isOrderCompleted() &&
-              <div className="bg-card rounded-lg border border-border p-4 text-center min-w-[140px]">
+              {!isOrderCompleted() && (
+                <div className="bg-card rounded-lg border border-border p-4 text-center min-w-[140px]">
                   <p className="font-caption text-xs text-muted-foreground uppercase tracking-wide mb-1">
                     Estimated Time
                   </p>
@@ -448,7 +425,7 @@ const OrderTracking = () => {
                     {getEstimatedTimeRemaining()}
                   </p>
                 </div>
-              }
+              )}
             </div>
 
             {/* Order ID and Status */}
@@ -459,23 +436,28 @@ const OrderTracking = () => {
                     Order {orderData?.id}
                   </p>
                   <p className="font-caption text-sm text-muted-foreground">
-                    Placed {new Date(orderData?.orderDate)?.toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit'
-                    })}
+                    Placed{" "}
+                    {new Date(orderData?.orderDate)?.toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <p className="font-body font-medium text-foreground">
                   Total: ${orderData?.total?.toFixed(2)}
                 </p>
                 <p className="font-caption text-sm text-muted-foreground">
-                  {orderData?.paymentMethod?.brand} •••• {orderData?.paymentMethod?.lastFour}
+                  {orderData?.paymentMethod?.brand} ••••{" "}
+                  {orderData?.paymentMethod?.lastFour}
                 </p>
               </div>
             </div>
@@ -485,8 +467,8 @@ const OrderTracking = () => {
             {/* Progress Timeline */}
             <OrderProgressTimeline
               timeline={orderData?.timeline}
-              currentStatus={orderData?.status} />
-
+              currentStatus={orderData?.status}
+            />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -496,27 +478,27 @@ const OrderTracking = () => {
                 <OrderSummaryCard
                   items={orderData?.items}
                   total={orderData?.total}
-                  specialInstructions={orderData?.specialInstructions} />
-
+                  specialInstructions={orderData?.specialInstructions}
+                />
 
                 {/* Order Details */}
                 <OrderDetails
                   orderData={orderData}
-                  onCallRestaurant={handleCallRestaurant} />
-
+                  onCallRestaurant={handleCallRestaurant}
+                />
               </div>
 
               {/* Right Column */}
               <div className="space-y-6">
                 {/* Delivery Tracking */}
-                {isDeliveryInProgress() &&
-                <DeliveryTracking
-                  driver={orderData?.delivery?.driver}
-                  trackingLocation={orderData?.delivery?.trackingLocation}
-                  deliveryAddress={orderData?.delivery?.address}
-                  onCallDriver={handleCallDriver} />
-
-                }
+                {isDeliveryInProgress() && (
+                  <DeliveryTracking
+                    driver={orderData?.delivery?.driver}
+                    trackingLocation={orderData?.delivery?.trackingLocation}
+                    deliveryAddress={orderData?.delivery?.address}
+                    onCallDriver={handleCallDriver}
+                  />
+                )}
 
                 {/* Order Actions */}
                 <OrderActions
@@ -524,46 +506,53 @@ const OrderTracking = () => {
                   onContactSupport={handleContactSupport}
                   onReorder={handleReorder}
                   onOrderAgain={handleOrderAgain}
-                  onCallDriver={isDeliveryInProgress() ? handleCallDriver : null} />
-
+                  onCallDriver={
+                    isDeliveryInProgress() ? handleCallDriver : null
+                  }
+                />
               </div>
             </div>
 
             {/* Completed Order Message */}
-            {isOrderCompleted() &&
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6 text-center">
-                <Icon name="CheckCircle" size={48} className="text-green-600 dark:text-green-400 mx-auto mb-4" />
+            {isOrderCompleted() && (
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6 text-center">
+                <Icon
+                  name="CheckCircle"
+                  size={48}
+                  className="text-green-600 dark:text-green-400 mx-auto mb-4"
+                />
                 <h3 className="font-heading font-bold text-xl text-green-900 dark:text-green-100 mb-2">
                   Order Delivered Successfully! 🎉
                 </h3>
                 <p className="font-body text-green-700 dark:text-green-300 mb-4">
-                  We hope you enjoyed your meal! Thank you for choosing Foodies Restaurant.
+                  We hope you enjoyed your meal! Thank you for choosing Foodies
+                  Restaurant.
                 </p>
                 <div className="flex items-center justify-center space-x-4">
                   <Button
-                  onClick={handleReorder}
-                  variant="default"
-                  iconName="RotateCcw"
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={handleReorder}
+                    variant="default"
+                    iconName="RotateCcw"
+                    className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     Reorder
                   </Button>
                   <Button
-                  onClick={() => router.push('/menu-catalog')}
-                  variant="outline"
-                  iconName="Star"
-                  className="border-green-600 text-green-600 hover:bg-green-50"
+                    onClick={() => router.push("/menu-catalog")}
+                    variant="outline"
+                    iconName="Star"
+                    className="border-green-600 text-green-600 hover:bg-green-50"
                   >
                     Rate Order
                   </Button>
                 </div>
               </div>
-            }
+            )}
           </div>
         </div>
       </main>
-    </div>);
-
+    </div>
+  );
 };
 
 export default OrderTracking;

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import  { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmationModal from "@/components/table-reservation/confirmation-modal";
 import DateTimePicker from "@/components/table-reservation/date-time-picker";
@@ -9,6 +9,8 @@ import RestaurantSelector from "@/components/table-reservation/restaurant-select
 import Icon from "@/components/ui/app-icon";
 import Navbar from "@/components/navbar/navbar";
 import FooterSection from "@/components/footer/footer";
+import { reservationService } from "@/lib/firebase/reservations";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface Restaurant {
   id: string;
@@ -36,7 +38,8 @@ interface FormData {
 const TableReservation = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [reservationData, setReservationData] = useState({
@@ -52,7 +55,12 @@ const TableReservation = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Mock restaurant data
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Restaurant Locations
   const restaurants = [
     {
       id: "downtown",
@@ -139,15 +147,35 @@ const TableReservation = () => {
     setCurrentStep(3);
   };
 
+  const user = useAppSelector((state) => state.auth.user);
+
   const handleReservationSubmit = async (formData: FormData) => {
+    if (!selectedRestaurant || !selectedDate || !selectedTime) return;
+
     setLoading(true);
     setReservationData(formData);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      await reservationService.createReservation(
+        {
+          restaurantId: selectedRestaurant.id,
+          restaurantName: selectedRestaurant.name,
+          restaurantAddress: selectedRestaurant.address,
+          restaurantImage: selectedRestaurant.image,
+          date: selectedDate.toISOString(),
+          time: selectedTime,
+          ...formData,
+        },
+        user?.id ? String(user.id) : undefined
+      );
 
-    setLoading(false);
-    setShowConfirmation(true);
+      setLoading(false);
+      setShowConfirmation(true);
+    } catch (error) {
+      console.error("Failed to create reservation:", error);
+      setLoading(false);
+      // You might want to show an error toast here
+    }
   };
 
   const handleConfirmationClose = () => {
@@ -159,13 +187,12 @@ const TableReservation = () => {
     setSelectedTime(null);
   };
 
-
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center space-x-4 mb-8">
       {[1, 2, 3]?.map((step) => (
         <div key={step} className="flex items-center">
           <div
-            className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+            className={`flex items-center justify-center w-10 h-10 rounded-full border-white border-2 transition-all duration-200 ${
               step <= currentStep
                 ? "bg-linear-to-br from-primary-solid via-grad1 to-grad2 border-primary text-primary-foreground"
                 : "bg-card border-border text-muted-foreground"
@@ -236,7 +263,7 @@ const TableReservation = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       {/* Navbar */}
-      <Navbar/>
+      <Navbar />
 
       {/* Main Content */}
       <main className="">
@@ -306,17 +333,20 @@ const TableReservation = () => {
       </main>
 
       {/* Footer */}
-      <FooterSection/>
-  {/* Confirmation Modal */}
-  {showConfirmation && selectedRestaurant && selectedDate && selectedTime && (
-        <ConfirmationModal
-          restaurant={selectedRestaurant}
-          date={selectedDate}
-          time={selectedTime}
-          reservationData={reservationData}
-          onClose={handleConfirmationClose}
-        />
-      )}
+      <FooterSection />
+      {/* Confirmation Modal */}
+      {showConfirmation &&
+        selectedRestaurant &&
+        selectedDate &&
+        selectedTime && (
+          <ConfirmationModal
+            restaurant={selectedRestaurant}
+            date={selectedDate}
+            time={selectedTime}
+            reservationData={reservationData}
+            onClose={handleConfirmationClose}
+          />
+        )}
     </div>
   );
 };

@@ -8,9 +8,9 @@ import {
   getDoc,
   updateDoc,
   orderBy,
-} from 'firebase/firestore';
-import { db } from './config';
-import { CartItem } from '@/lib/store/slices/cartSlice';
+} from "firebase/firestore";
+import { db } from "./config";
+import { CartItem } from "@/lib/store/slices/cartSlice";
 
 export interface Order {
   id: string;
@@ -45,33 +45,59 @@ export interface Order {
 
 export const orderService = {
   // Create order
-  createOrder: async (orderData: Omit<Order, 'id' | 'createdAt'>): Promise<string> => {
+  createOrder: async (
+    orderData: Omit<Order, "id" | "createdAt">
+  ): Promise<string> => {
     try {
-      const docRef = await addDoc(collection(db, 'orders'), {
+      const docRef = await addDoc(collection(db, "orders"), {
         ...orderData,
         createdAt: new Date().toISOString(),
         timeline: [
           {
-            status: 'order_confirmed',
+            status: "order_confirmed",
             timestamp: new Date().toISOString(),
-            title: 'Order Confirmed',
-            description: 'Your order has been received and confirmed',
+            title: "Order Confirmed",
+            description: "Your order has been received and confirmed",
             completed: true,
             active: false,
           },
           {
-            status: 'preparing',
+            status: "preparing",
             timestamp: null,
-            title: 'Preparing Your Order',
-            description: 'Our chefs are preparing your delicious meal',
+            title: "Preparing Your Order",
+            description: "Our chefs are preparing your delicious meal",
             completed: false,
             active: true,
+          },
+          {
+            status: "ready_for_pickup",
+            timestamp: null,
+            title: "Ready for Pickup",
+            description: "Order is ready and waiting for driver pickup",
+            completed: false,
+            active: false,
+          },
+          {
+            status: "out_for_delivery",
+            timestamp: null,
+            title: "Out for Delivery",
+            description: "Your order is on its way to you",
+            completed: false,
+            active: false,
+          },
+          {
+            status: "completed",
+            timestamp: null,
+            title: "Delivered",
+            description: "Your order has been delivered. Enjoy your meal!",
+            completed: false,
+            active: false,
           },
         ],
       });
       return docRef.id;
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error("Error creating order:", error);
       throw error;
     }
   },
@@ -82,9 +108,9 @@ export const orderService = {
       // Try query with index first
       try {
         const q = query(
-          collection(db, 'orders'),
-          where('userId', '==', userId),
-          orderBy('createdAt', 'desc')
+          collection(db, "orders"),
+          where("userId", "==", userId),
+          orderBy("createdAt", "desc")
         );
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map((doc) => ({
@@ -93,9 +119,14 @@ export const orderService = {
         })) as Order[];
       } catch (indexError: any) {
         // If index doesn't exist, fallback to filtering in memory
-        if (indexError.code === 'failed-precondition') {
-          console.warn('Firestore index not found. Fetching all orders and filtering in memory. Please create the index for better performance.');
-          const q = query(collection(db, 'orders'), where('userId', '==', userId));
+        if (indexError.code === "failed-precondition") {
+          console.warn(
+            "Firestore index not found. Fetching all orders and filtering in memory. Please create the index for better performance."
+          );
+          const q = query(
+            collection(db, "orders"),
+            where("userId", "==", userId)
+          );
           const querySnapshot = await getDocs(q);
           const orders = querySnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -111,7 +142,7 @@ export const orderService = {
         throw indexError;
       }
     } catch (error) {
-      console.error('Error fetching user orders:', error);
+      console.error("Error fetching user orders:", error);
       return [];
     }
   },
@@ -119,9 +150,9 @@ export const orderService = {
   // Get order by ID
   getOrder: async (orderId: string): Promise<Order | null> => {
     try {
-      const docRef = doc(db, 'orders', orderId);
+      const docRef = doc(db, "orders", orderId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return {
           id: docSnap.id,
@@ -130,7 +161,7 @@ export const orderService = {
       }
       return null;
     } catch (error) {
-      console.error('Error fetching order:', error);
+      console.error("Error fetching order:", error);
       return null;
     }
   },
@@ -138,11 +169,10 @@ export const orderService = {
   // Update order status
   updateOrderStatus: async (orderId: string, status: string): Promise<void> => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status });
+      await updateDoc(doc(db, "orders", orderId), { status });
     } catch (error) {
-      console.error('Error updating order status:', error);
+      console.error("Error updating order status:", error);
       throw error;
     }
   },
 };
-

@@ -6,13 +6,13 @@ import Header from "../../components/navbar/navbar";
 import BrowseByCategoryWithFilters from "../../components/menu-catalog/browse-by-category-with-filters";
 import MenuGrid from "../../components/menu-catalog/menu-grid";
 import Icon from "../../components/ui/app-icon";
-import { menuItems, categories } from "@/lib/constants";
+import { categories } from "@/lib/constants";
+import { menuService } from "@/lib/firebase/menu";
 import { Filters, MenuItem } from "@/types/menu-catalog";
 import FooterSection from "@/components/footer/footer";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { addItem, addCartItem } from "@/lib/store/slices/cartSlice";
 import { auth } from "@/lib/firebase/config";
-
 
 const MenuCatalog = () => {
   const router = useRouter();
@@ -20,7 +20,7 @@ const MenuCatalog = () => {
   const cartItems = useAppSelector((state) => state.cart.items);
   const user = useAppSelector((state) => state.auth.user);
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  
+
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [filters, setFilters] = useState<Filters>({
     dietary: "",
@@ -29,13 +29,23 @@ const MenuCatalog = () => {
   });
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-    return () => clearTimeout(timer);
+  // Fetch menu items
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        setLoading(true);
+        const items = await menuService.getMenuItems();
+        setMenuItems(items);
+      } catch (error) {
+        console.error("Error fetching menu items:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuItems();
   }, []);
 
   const handleCategoryChange = (categoryId: string) => {
@@ -56,29 +66,30 @@ const MenuCatalog = () => {
         image: item.image,
         imageAlt: item.imageAlt,
         customizations: [],
-        specialRequests: null
+        specialRequests: null,
       };
-
-      // Optimistic update for immediate UI feedback
-      dispatch(addItem(cartItem));
 
       // If user is logged in, sync with Firebase
       if (user && auth.currentUser) {
         try {
-          await dispatch(addCartItem({
-            userId: auth.currentUser.uid,
-            item: cartItem
-          })).unwrap();
+          await dispatch(
+            addCartItem({
+              userId: auth.currentUser.uid,
+              item: cartItem,
+            })
+          ).unwrap();
         } catch (error) {
-          console.error('Error syncing cart with Firebase:', error);
-          // Rollback optimistic update if Firebase sync fails
+          console.error("Error syncing cart with Firebase:", error);
           // In production, you might want to show an error to the user
         }
+      } else {
+        // Local update for unauthenticated users
+        dispatch(addItem(cartItem));
       }
 
       console.log("Added to cart:", item);
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error("Error adding to cart:", error);
     }
 
     // Show success feedback (you could add a toast notification here)

@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import Icon from "../ui/app-icon";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 const FooterSection = () => {
   const currentYear = new Date().getFullYear();
@@ -100,7 +101,7 @@ const FooterSection = () => {
             viewport={{ once: true }}
             className="lg:col-span-1"
           >
-            <div className="flex items-center space-x-2 mb-6">
+            <Link href={'/'} className="flex items-center space-x-2 mb-6">
               <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center">
                 <Icon
                   name="Salad"
@@ -116,7 +117,7 @@ const FooterSection = () => {
                   Restaurant
                 </p>
               </div>
-            </div>
+            </Link>
 
             <p className="text-secondary-foreground/80 font-body mb-6 leading-relaxed">
               Serving delicious, authentic cuisine with passion and quality

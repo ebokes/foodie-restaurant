@@ -40,6 +40,30 @@ const buttonVariants = cva(
   }
 );
 
+import Link from "next/link";
+
+type ButtonBaseProps = VariantProps<typeof buttonVariants> & {
+  iconName?: string | React.ReactNode;
+  asChild?: boolean;
+};
+
+type ButtonAsButton = ButtonBaseProps &
+  React.ComponentProps<"button"> & {
+    as?: "button";
+  };
+
+type ButtonAsLink = ButtonBaseProps &
+  React.ComponentProps<typeof Link> & {
+    as: "link";
+  };
+
+type ButtonAsExternal = ButtonBaseProps &
+  React.ComponentProps<"a"> & {
+    as: "a";
+  };
+
+type ButtonProps = ButtonAsButton | ButtonAsLink | ButtonAsExternal;
+
 function Button({
   className,
   variant,
@@ -48,11 +72,7 @@ function Button({
   asChild = false,
   children,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-    iconName?: string | React.ReactNode;
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   const LucideIcon =
     typeof iconName === "string"
@@ -64,16 +84,8 @@ function Button({
         )[iconName] ?? null
       : null;
 
-  return (
-    <Comp
-      data-slot="button"
-      className={cn(
-        buttonVariants({ variant, size }),
-        className,
-        "cursor-pointer"
-      )}
-      {...props}
-    >
+  const content = (
+    <>
       {/* icon on the left */}
       {(LucideIcon || (iconName && typeof iconName !== "string")) && (
         <span aria-hidden="true" className="inline-flex items-center">
@@ -83,6 +95,37 @@ function Button({
 
       {/* button label */}
       {children}
+    </>
+  );
+
+  const commonClasses = cn(
+    buttonVariants({ variant, size }),
+    className,
+    "cursor-pointer"
+  );
+
+  if (props.as === "link") {
+    const { as, ...linkProps } = props as ButtonAsLink;
+    return (
+      <Link className={commonClasses} {...linkProps}>
+        {content}
+      </Link>
+    );
+  }
+
+  if (props.as === "a") {
+    const { as, ...anchorProps } = props as ButtonAsExternal;
+    return (
+      <a className={commonClasses} {...anchorProps}>
+        {content}
+      </a>
+    );
+  }
+
+  const { as, ...buttonProps } = props as ButtonAsButton;
+  return (
+    <Comp data-slot="button" className={commonClasses} {...buttonProps}>
+      {content}
     </Comp>
   );
 }

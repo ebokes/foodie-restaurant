@@ -1,7 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 const Hero = () => {
+  const router = useRouter();
   return (
     <section className="overflow-hidden min-h-screen relative">
       <div>
@@ -45,17 +49,21 @@ const Hero = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center mt-16">
           <Button
+            as="link"
             variant="destructive"
             size="lg"
             className="text-xl px-10 py-5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow-2xl hover:scale-105 transition-all duration-300 border-0"
+            href="/table-reservation"
           >
             Make Reservation
           </Button>
 
           <Button
+            as="link"
             variant="outline"
             size="lg"
             className="text-xl px-10 py-4 border-2 border-white text-white hover:bg-white hover:text-black font-bold rounded-lg shadow-2xl hover:scale-105 transition-all duration-300"
+            href="/menu-catalog"
           >
             Order Online
           </Button>

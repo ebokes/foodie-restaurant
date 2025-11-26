@@ -42,3 +42,5 @@ yarn-error.log*
 next-env.d.ts
 
 FIREBASE_SETUP.md
+firestore.rules
+firestore.indexes.json

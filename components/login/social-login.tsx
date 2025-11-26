@@ -8,53 +8,32 @@ interface SocialLoginProps {
   isLoading?: boolean;
 }
 
-interface MockUser {
-  id: number;
-  name: string;
-  email: string;
-  avatar: string;
-  avatarAlt: string;
-  provider?: string;
-}
+
 
 interface SocialProvider {
   id: string;
   name: string;
   icon: string;
   color: string;
-  mockUser: MockUser;
+
 }
 
 const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = false }) => {
   const socialProviders: SocialProvider[] = [
-  {
-    id: 'google',
-    name: 'Google',
-    icon: 'Chrome',
-    color: 'bg-white border-2 border-border text-foreground hover:bg-muted',
-    mockUser: {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@gmail.com',
-      avatar: "https://images.unsplash.com/photo-1684262855358-88f296a2cfc2",
-      avatarAlt: 'Professional headshot of smiling woman with shoulder-length blonde hair in white blouse',
-      provider: 'google'
-    }
-  },
-  {
-    id: 'facebook',
-    name: 'Facebook',
-    icon: 'Facebook',
-    color: 'bg-blue-600 text-white hover:bg-blue-700',
-    mockUser: {
-      id: 3,
-      name: 'Mike Chen',
-      email: 'mike.chen@facebook.com',
-      avatar: "https://images.unsplash.com/photo-1687256457585-3608dfa736c5",
-      avatarAlt: 'Professional headshot of Asian man with black hair and glasses in dark suit',
-      provider: 'facebook'
-    }
-  }];
+    {
+      id: 'google',
+      name: 'Google',
+      icon: 'Chrome',
+      color: 'bg-white border-2 border-border text-foreground hover:bg-muted',
+
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      icon: 'Facebook',
+      color: 'bg-blue-600 text-white hover:bg-blue-700',
+
+    }];
 
 
   const handleSocialLogin = async (provider: SocialProvider) => {

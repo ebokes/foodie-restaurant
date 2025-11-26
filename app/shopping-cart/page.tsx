@@ -1,18 +1,27 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/navbar/navbar';
-import CartItem from '@/components/shopping-cart/cart-item';
-import OrderSummary from '@/components/shopping-cart/order-summary';
-import EmptyCart from '@/components/shopping-cart/empty-card';
-import PromoCodeSection from '@/components/shopping-cart/promo-code-section';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { updateQuantity, removeItem, applyPromo, removePromo, updateCartQuantity, removeCartItem, fetchCart, type PromoCode } from '@/lib/store/slices/cartSlice';
-import { auth } from '@/lib/firebase/config';
-import { useEffect } from 'react';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/navbar/navbar";
+import CartItem from "@/components/shopping-cart/cart-item";
+import OrderSummary from "@/components/shopping-cart/order-summary";
+import EmptyCart from "@/components/shopping-cart/empty-card";
+import PromoCodeSection from "@/components/shopping-cart/promo-code-section";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import {
+  updateQuantity,
+  removeItem,
+  applyPromo,
+  removePromo,
+  updateCartQuantity,
+  removeCartItem,
+  fetchCart,
+  type PromoCode,
+} from "@/lib/store/slices/cartSlice";
+import { auth } from "@/lib/firebase/config";
+import { useEffect } from "react";
 
 const ShoppingCart = () => {
   const router = useRouter();
@@ -31,9 +40,30 @@ const ShoppingCart = () => {
 
   // Available promo codes
   const availablePromoCodes: Record<string, PromoCode> = {
-    'SAVE10': { code: 'SAVE10', discount: 0.10, description: '10% off your order', minOrder: 20 },
-    'FIRST20': { code: 'FIRST20', discount: 0.20, description: '20% off first order', minOrder: 25 },
-    'WELCOME15': { code: 'WELCOME15', discount: 0.15, description: '15% off welcome offer', minOrder: 15 }
+    SAVE10: {
+      code: "SAVE10",
+      discount: 0.1,
+      description: "10% off your order",
+      minOrder: 20,
+    },
+    FIRST20: {
+      code: "FIRST20",
+      discount: 0.2,
+      description: "20% off first order",
+      minOrder: 25,
+    },
+    WELCOME15: {
+      code: "WELCOME15",
+      discount: 0.15,
+      description: "15% off welcome offer",
+      minOrder: 15,
+    },
+    GOLDEN25: {
+      code: "GOLDEN25",
+      discount: 0.25,
+      description: "25% off golden offer",
+      minOrder: 30,
+    },
   };
 
   const handleUpdateQuantity = async (itemId: number, newQuantity: number) => {
@@ -43,13 +73,15 @@ const ShoppingCart = () => {
     // If user is logged in, sync with Firebase
     if (user && auth.currentUser) {
       try {
-        await dispatch(updateCartQuantity({
-          userId: auth.currentUser.uid,
-          itemId,
-          quantity: newQuantity
-        })).unwrap();
+        await dispatch(
+          updateCartQuantity({
+            userId: auth.currentUser.uid,
+            itemId,
+            quantity: newQuantity,
+          })
+        ).unwrap();
       } catch (error) {
-        console.error('Error updating cart in Firebase:', error);
+        console.error("Error updating cart in Firebase:", error);
       }
     }
   };
@@ -61,12 +93,14 @@ const ShoppingCart = () => {
     // If user is logged in, sync with Firebase
     if (user && auth.currentUser) {
       try {
-        await dispatch(removeCartItem({
-          userId: auth.currentUser.uid,
-          itemId
-        })).unwrap();
+        await dispatch(
+          removeCartItem({
+            userId: auth.currentUser.uid,
+            itemId,
+          })
+        ).unwrap();
       } catch (error) {
-        console.error('Error removing item from Firebase:', error);
+        console.error("Error removing item from Firebase:", error);
       }
     }
   };
@@ -76,23 +110,28 @@ const ShoppingCart = () => {
     router.push(`/menu-catalog?modify=${itemId}`);
   };
 
-  const handleApplyPromo = async (promoCode: string): Promise<{ success: boolean; message?: string }> => {
+  const handleApplyPromo = async (
+    promoCode: string
+  ): Promise<{ success: boolean; message?: string }> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const promo = availablePromoCodes[promoCode];
-        const currentSubtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const currentSubtotal = cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
         if (promo && currentSubtotal >= promo.minOrder) {
           dispatch(applyPromo(promo));
           resolve({ success: true });
         } else if (promo) {
           resolve({
             success: false,
-            message: `Minimum order of $${promo.minOrder} required`
+            message: `Minimum order of $${promo.minOrder} required`,
           });
         } else {
           resolve({
             success: false,
-            message: 'Invalid promo code'
+            message: "Invalid promo code",
           });
         }
       }, 1000);
@@ -106,16 +145,27 @@ const ShoppingCart = () => {
   const handleCheckout = async () => {
     setIsCheckoutLoading(true);
 
+    if (!user) {
+      // If user is not logged in, redirect to login page
+      // We can pass a return URL to redirect back after login if needed
+      router.push("/login?redirect=/shopping-cart");
+      setIsCheckoutLoading(false);
+      return;
+    }
+
     // Simulate checkout process
     setTimeout(() => {
       setIsCheckoutLoading(false);
-      // Navigate to checkout page (would be implemented)
-      alert('Proceeding to checkout...\nThis would navigate to the payment page.');
-    }, 2000);
+      // Navigate to checkout page
+      router.push("/checkout");
+    }, 1000);
   };
 
   // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const discountAmount = appliedPromo ? subtotal * appliedPromo.discount : 0;
   const discountedSubtotal = subtotal - discountAmount;
   const tax = discountedSubtotal * 0.08; // 8% tax
@@ -166,8 +216,9 @@ const ShoppingCart = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push('/menu-catalog')}
-                  iconName="Plus">
+                  onClick={() => router.push("/menu-catalog")}
+                  iconName="Plus"
+                >
                   Add More Items
                 </Button>
               </div>
@@ -189,15 +240,16 @@ const ShoppingCart = () => {
               <PromoCodeSection
                 onApplyPromo={handleApplyPromo}
                 appliedPromo={appliedPromo}
-                onRemovePromo={handleRemovePromo} />
-
+                onRemovePromo={handleRemovePromo}
+              />
 
               {/* Continue Shopping */}
               <div className="pt-6 border-t border-border">
                 <Button
                   variant="outline"
-                  onClick={() => router.push('/menu-catalog')}
-                  iconName="ArrowLeft">
+                  onClick={() => router.push("/menu-catalog")}
+                  iconName="ArrowLeft"
+                >
                   Continue Shopping
                 </Button>
               </div>
@@ -213,8 +265,8 @@ const ShoppingCart = () => {
                 total={total}
                 onCheckout={handleCheckout}
                 isLoading={isCheckoutLoading}
-                promoCode={appliedPromo?.code || null} />
-
+                promoCode={appliedPromo?.code || null}
+              />
             </div>
           </div>
 
@@ -232,7 +284,8 @@ const ShoppingCart = () => {
               disabled={isCheckoutLoading}
               onClick={handleCheckout}
               iconName="CreditCard"
-              className="w-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 hover:bg-primary/90 text-primary-foreground">
+              className="w-full bg-linear-to-br from-primary-solid via-grad1 to-grad2 hover:bg-primary/90 text-primary-foreground"
+            >
               Proceed to Checkout
             </Button>
           </div>
@@ -241,8 +294,8 @@ const ShoppingCart = () => {
           <div className="lg:hidden h-24"></div>
         </div>
       </main>
-    </div>);
-
+    </div>
+  );
 };
 
 export default ShoppingCart;

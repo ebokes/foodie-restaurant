@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Icon from "@/components/ui/app-icon";
 
 interface Restaurant {
@@ -47,6 +48,44 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   const capitalizeWords = (str: string) => {
     return str?.replace(/\b\w/g, (l) => l?.toUpperCase());
+  };
+
+  const router = useRouter();
+
+  const handleDone = () => {
+    onClose();
+    router.push("/my-reservations");
+  };
+
+  const handleAddToCalendar = () => {
+    // Parse time string (e.g., "11:00 AM")
+    const [timeStr, modifier] = time.split(" ");
+    let [hours, minutes] = timeStr.split(":").map(Number);
+
+    if (modifier === "PM" && hours < 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    const startDate = new Date(date);
+    startDate.setHours(hours, minutes, 0);
+
+    const endDate = new Date(startDate);
+    endDate.setHours(hours + 2); // Assume 2 hour duration
+
+    const formatCalendarDate = (d: Date) => {
+      return d.toISOString().replace(/-|:|\.\d+/g, "");
+    };
+
+    const details = `Reservation for ${reservationData.guestCount} people.\nConfirmation: ${confirmationNumber}\nName: ${reservationData.firstName} ${reservationData.lastName}`;
+
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      `Reservation at ${restaurant.name}`
+    )}&dates=${formatCalendarDate(startDate)}/${formatCalendarDate(
+      endDate
+    )}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(
+      restaurant.address
+    )}`;
+
+    window.open(googleCalendarUrl, "_blank");
   };
 
   return (
@@ -143,13 +182,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={onClose}
+              onClick={handleDone}
               className="flex-1 bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground py-3 px-4 rounded-lg font-body font-medium hover:bg-primary/90 transition-colors duration-200"
             >
               Done
             </button>
             <button
-              onClick={onClose}
+              onClick={handleAddToCalendar}
               className="flex-1 border border-border py-3 px-4 rounded-lg font-body font-medium text-foreground hover:bg-muted transition-colors duration-200"
             >
               Add to Calendar

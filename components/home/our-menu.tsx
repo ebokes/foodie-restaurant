@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Icon from "../ui/app-icon";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 const OurMenu = () => {
   // const navigate = useNavigate();
@@ -151,7 +152,10 @@ const OurMenu = () => {
                 <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <Link
+                  href="/menu-catalog"
+                  className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                >
                   <div className="bg-card/90 backdrop-blur-sm rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform duration-300">
                     <Icon
                       name="ArrowRight"
@@ -159,7 +163,7 @@ const OurMenu = () => {
                       className="text-primary"
                     />
                   </div>
-                </div>
+                </Link>
               </div>
 
               {/* Content */}
@@ -173,7 +177,7 @@ const OurMenu = () => {
                 </p>
 
                 {/* Action */}
-                <div className="flex items-center justify-between">
+                <Link href="/menu-catalog" className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground font-body">
                     View all items
                   </span>
@@ -182,7 +186,7 @@ const OurMenu = () => {
                     size={18}
                     className="text-primary group-hover:translate-x-1 transition-transform duration-300"
                   />
-                </div>
+                </Link>
               </div>
             </div>
           ))}

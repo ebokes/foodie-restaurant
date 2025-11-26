@@ -1,22 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/navbar/navbar';
-import ProfileSection from '@/components/user-account/profile-section';
-import AddressSection from '@/components/user-account/address-section';
-import OrderHistorySection from '@/components/user-account/order-history-section';
-import PreferencesSection from '@/components/user-account/preferences-section';
-import SecuritySection from '@/components/user-account/security-section';
-import PaymentMethodsSection from '@/components/user-account/payment-methods-section';
-import Icon, { type IconProps } from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { updateUser, signOutUser } from '@/lib/store/slices/authSlice';
-import { auth, db } from '@/lib/firebase/config';
-import { orderService } from '@/lib/firebase/orders';
-import { userService } from '@/lib/firebase/user';
-import { doc, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/navbar/navbar";
+import ProfileSection from "@/components/user-account/profile-section";
+import AddressSection from "@/components/user-account/address-section";
+import OrderHistorySection from "@/components/user-account/order-history-section";
+import PreferencesSection from "@/components/user-account/preferences-section";
+import SecuritySection from "@/components/user-account/security-section";
+import PaymentMethodsSection from "@/components/user-account/payment-methods-section";
+import Icon, { type IconProps } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { updateUser, signOutUser } from "@/lib/store/slices/authSlice";
+import { auth, db } from "@/lib/firebase/config";
+import { orderService } from "@/lib/firebase/orders";
+import { userService } from "@/lib/firebase/user";
+import { doc, setDoc } from "firebase/firestore";
 
 interface User {
   id: string;
@@ -27,6 +27,7 @@ interface User {
   joinDate: string;
   totalOrders: number;
   favoriteItems: number;
+  avatar?: string;
 }
 
 interface Address {
@@ -109,15 +110,15 @@ interface PaymentMethod {
 interface Tab {
   id: string;
   label: string;
-  icon: IconProps['name'];
+  icon: IconProps["name"];
 }
 
 const UserAccount = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const reduxUser = useAppSelector((state) => state.auth.user);
-  const [activeTab, setActiveTab] = useState<string>('profile');
-  
+  const [activeTab, setActiveTab] = useState<string>("profile");
+
   // Initialize user from Redux
   const [user, setUser] = useState<User | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -130,32 +131,32 @@ const UserAccount = () => {
       promotions: true,
       newMenuItems: false,
       emailNewsletter: false,
-      smsNotifications: false
+      smsNotifications: false,
     },
-    favoriteItems: []
+    favoriteItems: [],
   });
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const tabs: Tab[] = [
-    { id: 'profile', label: 'Profile', icon: 'User' },
-    { id: 'addresses', label: 'Addresses', icon: 'MapPin' },
-    { id: 'orders', label: 'Order History', icon: 'Package' },
-    { id: 'preferences', label: 'Preferences', icon: 'Settings' },
-    { id: 'payment', label: 'Payment', icon: 'CreditCard' },
-    { id: 'security', label: 'Security', icon: 'Shield' }
+    { id: "profile", label: "Profile", icon: "User" },
+    { id: "addresses", label: "Addresses", icon: "MapPin" },
+    { id: "orders", label: "Order History", icon: "Package" },
+    { id: "preferences", label: "Preferences", icon: "Settings" },
+    { id: "payment", label: "Payment", icon: "CreditCard" },
+    { id: "security", label: "Security", icon: "Shield" },
   ];
 
   // Check authentication and load user data
   useEffect(() => {
     if (!reduxUser) {
-      router.push('/sign-in');
+      router.push("/sign-in");
       return;
     }
 
     const loadUserData = async () => {
       if (!auth.currentUser) {
-        router.push('/sign-in');
+        router.push("/sign-in");
         return;
       }
 
@@ -166,13 +167,14 @@ const UserAccount = () => {
         // Load user profile
         setUser({
           id: String(reduxUser.id || userId),
-          name: reduxUser.name || '',
-          email: reduxUser.email || '',
-          phone: reduxUser.phone || '',
-          dateOfBirth: reduxUser.dateOfBirth || '',
+          name: reduxUser.name || "",
+          email: reduxUser.email || "",
+          phone: reduxUser.phone || "",
+          dateOfBirth: reduxUser.dateOfBirth || "",
           joinDate: reduxUser.joinDate || new Date().toISOString(),
           totalOrders: 0, // Will be calculated from orders
-          favoriteItems: 0 // Will be calculated from preferences
+          favoriteItems: 0, // Will be calculated from preferences
+          avatar: reduxUser.avatar,
         });
 
         // Load addresses
@@ -197,14 +199,16 @@ const UserAccount = () => {
             price: item.price,
             image: item.image,
             imageAlt: item.imageAlt,
-            customizations: item.customizations
+            customizations: item.customizations,
           })),
-          deliveryAddress: order.deliveryAddress
+          deliveryAddress: order.deliveryAddress,
         }));
         setOrders(convertedOrders);
 
         // Update totalOrders
-        setUser((prev) => prev ? { ...prev, totalOrders: convertedOrders.length } : null);
+        setUser((prev) =>
+          prev ? { ...prev, totalOrders: convertedOrders.length } : null
+        );
 
         // Load preferences
         const userPrefs = await userService.getPreferences(userId);
@@ -216,22 +220,27 @@ const UserAccount = () => {
             promotions: userPrefs.notifications?.promotions ?? true,
             newMenuItems: userPrefs.notifications?.newMenuItems ?? false,
             emailNewsletter: userPrefs.notifications?.emailNewsletter ?? false,
-            smsNotifications: userPrefs.notifications?.smsNotifications ?? false
+            smsNotifications:
+              userPrefs.notifications?.smsNotifications ?? false,
           },
-          favoriteItems: userPrefs.favoriteItems || []
+          favoriteItems: userPrefs.favoriteItems || [],
         });
 
         // Update favoriteItems count
-        setUser((prev) => prev ? { 
-          ...prev, 
-          favoriteItems: userPrefs.favoriteItems?.length || 0 
-        } : null);
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                favoriteItems: userPrefs.favoriteItems?.length || 0,
+              }
+            : null
+        );
 
         // Load payment methods
         const userPaymentMethods = await userService.getPaymentMethods(userId);
         setPaymentMethods(userPaymentMethods);
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error("Error loading user data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -241,43 +250,49 @@ const UserAccount = () => {
   }, [router, reduxUser]);
 
   // Profile handlers
-  const handleUpdateProfile = async (updatedData: Partial<User>): Promise<void> => {
+  const handleUpdateProfile = async (
+    updatedData: Partial<User>
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
-    setUser((prev) => prev ? { ...prev, ...updatedData } : null);
+    setUser((prev) => (prev ? { ...prev, ...updatedData } : null));
 
     // Update Firestore
     try {
       const userId = auth.currentUser.uid;
       await setDoc(
-        doc(db, 'users', userId),
+        doc(db, "users", userId),
         {
           ...updatedData,
-          id: user?.id || userId
+          id: user?.id || userId,
         },
         { merge: true }
       );
 
       // Update Redux store
       dispatch(updateUser(updatedData));
-      console.log('Profile updated:', updatedData);
+      console.log("Profile updated:", updatedData);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
     }
   };
 
   // Address handlers
-  const handleAddAddress = async (newAddress: Omit<Address, 'id'>): Promise<void> => {
+  const handleAddAddress = async (
+    newAddress: Omit<Address, "id">
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
     const address: Address = {
       ...newAddress,
-      id: `addr_${Date.now()}`
+      id: `addr_${Date.now()}`,
     };
 
     // If this is set as default, remove default from others
     if (address.isDefault) {
-      setAddresses((prev) => prev.map((addr) => ({ ...addr, isDefault: false })));
+      setAddresses((prev) =>
+        prev.map((addr) => ({ ...addr, isDefault: false }))
+      );
     }
 
     const updatedAddresses = [...addresses, address];
@@ -288,19 +303,24 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error('Error saving address:', error);
+      console.error("Error saving address:", error);
       // Revert on error
       setAddresses(addresses);
     }
   };
 
-  const handleUpdateAddress = async (addressId: string, updatedData: Partial<Address>): Promise<void> => {
+  const handleUpdateAddress = async (
+    addressId: string,
+    updatedData: Partial<Address>
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
     const updatedAddresses = addresses.map((addr) =>
       addr.id === addressId
         ? { ...addr, ...updatedData }
-        : updatedData.isDefault ? { ...addr, isDefault: false } : addr
+        : updatedData.isDefault
+        ? { ...addr, isDefault: false }
+        : addr
     );
     setAddresses(updatedAddresses);
 
@@ -309,7 +329,7 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error('Error updating address:', error);
+      console.error("Error updating address:", error);
       setAddresses(addresses);
     }
   };
@@ -325,15 +345,15 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error('Error deleting address:', error);
+      console.error("Error deleting address:", error);
       setAddresses(addresses);
     }
   };
 
   // Order handlers
   const handleReorder = (order: Order): void => {
-    console.log('Reordering:', order);
-    router.push('/shopping-cart');
+    console.log("Reordering:", order);
+    router.push("/shopping-cart");
   };
 
   const handleViewOrderDetails = (order: Order): void => {
@@ -341,7 +361,9 @@ const UserAccount = () => {
   };
 
   // Preferences handlers
-  const handleUpdatePreferences = async (updatedPreferences: Preferences): Promise<void> => {
+  const handleUpdatePreferences = async (
+    updatedPreferences: Preferences
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
     setPreferences(updatedPreferences);
@@ -352,32 +374,40 @@ const UserAccount = () => {
         dietary: updatedPreferences.dietary,
         spiceLevel: updatedPreferences.spiceLevel,
         notifications: updatedPreferences.notifications,
-        favoriteItems: updatedPreferences.favoriteItems
+        favoriteItems: updatedPreferences.favoriteItems,
       });
       dispatch(updateUser({ preferences: updatedPreferences }));
-      
+
       // Update favoriteItems count
-      setUser((prev) => prev ? { 
-        ...prev, 
-        favoriteItems: updatedPreferences.favoriteItems?.length || 0 
-      } : null);
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              favoriteItems: updatedPreferences.favoriteItems?.length || 0,
+            }
+          : null
+      );
     } catch (error) {
-      console.error('Error updating preferences:', error);
+      console.error("Error updating preferences:", error);
     }
   };
 
   // Payment handlers
-  const handleAddPaymentMethod = async (newPaymentMethod: Omit<PaymentMethod, 'id'>): Promise<void> => {
+  const handleAddPaymentMethod = async (
+    newPaymentMethod: Omit<PaymentMethod, "id">
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
     const paymentMethod: PaymentMethod = {
       ...newPaymentMethod,
-      id: `pm_${Date.now()}`
+      id: `pm_${Date.now()}`,
     };
 
     // If this is set as default, remove default from others
     if (paymentMethod.isDefault) {
-      setPaymentMethods((prev) => prev.map((pm) => ({ ...pm, isDefault: false })));
+      setPaymentMethods((prev) =>
+        prev.map((pm) => ({ ...pm, isDefault: false }))
+      );
     }
 
     setPaymentMethods((prev) => [...prev, paymentMethod]);
@@ -386,61 +416,83 @@ const UserAccount = () => {
     try {
       await userService.addPaymentMethod(auth.currentUser.uid, paymentMethod);
     } catch (error) {
-      console.error('Error adding payment method:', error);
+      console.error("Error adding payment method:", error);
       setPaymentMethods(paymentMethods);
     }
   };
 
-  const handleDeletePaymentMethod = async (paymentMethodId: string): Promise<void> => {
+  const handleDeletePaymentMethod = async (
+    paymentMethodId: string
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
-    const updatedMethods = paymentMethods.filter((pm) => pm.id !== paymentMethodId);
+    const updatedMethods = paymentMethods.filter(
+      (pm) => pm.id !== paymentMethodId
+    );
     setPaymentMethods(updatedMethods);
 
     // Save to Firebase
     try {
-      await userService.deletePaymentMethod(auth.currentUser.uid, paymentMethodId);
+      await userService.deletePaymentMethod(
+        auth.currentUser.uid,
+        paymentMethodId
+      );
     } catch (error) {
-      console.error('Error deleting payment method:', error);
+      console.error("Error deleting payment method:", error);
       setPaymentMethods(paymentMethods);
     }
   };
 
-  const handleSetDefaultPaymentMethod = async (paymentMethodId: string): Promise<void> => {
+  const handleSetDefaultPaymentMethod = async (
+    paymentMethodId: string
+  ): Promise<void> => {
     if (!auth.currentUser) return;
 
-    setPaymentMethods((prev) => prev.map((pm) => ({
-      ...pm,
-      isDefault: pm.id === paymentMethodId
-    })));
+    setPaymentMethods((prev) =>
+      prev.map((pm) => ({
+        ...pm,
+        isDefault: pm.id === paymentMethodId,
+      }))
+    );
 
     // Save to Firebase
     try {
-      await userService.setDefaultPaymentMethod(auth.currentUser.uid, paymentMethodId);
+      await userService.setDefaultPaymentMethod(
+        auth.currentUser.uid,
+        paymentMethodId
+      );
     } catch (error) {
-      console.error('Error setting default payment method:', error);
+      console.error("Error setting default payment method:", error);
     }
   };
 
   // Security handlers
-  const handleUpdatePassword = (passwordData: { currentPassword: string; newPassword: string; confirmPassword: string }): void => {
-    console.log('Password update requested:', passwordData);
+  const handleUpdatePassword = (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): void => {
+    console.log("Password update requested:", passwordData);
   };
 
-  const handleUpdateSecurity = (securitySettings: { twoFactorEnabled: boolean; loginNotifications: boolean; sessionTimeout: string }): void => {
-    console.log('Security settings updated:', securitySettings);
+  const handleUpdateSecurity = (securitySettings: {
+    twoFactorEnabled: boolean;
+    loginNotifications: boolean;
+    sessionTimeout: string;
+  }): void => {
+    console.log("Security settings updated:", securitySettings);
   };
 
   // Header handlers
   const handleLogout = async (): Promise<void> => {
     await dispatch(signOutUser()).unwrap();
-    router.push('/sign-in');
+    router.push("/sign-in");
   };
 
   const handleAccountClick = (action: string): void => {
-    if (action === 'logout') {
+    if (action === "logout") {
       handleLogout().catch((error) => {
-        console.error('Logout error:', error);
+        console.error("Logout error:", error);
       });
     }
   };
@@ -451,15 +503,12 @@ const UserAccount = () => {
     }
 
     switch (activeTab) {
-      case 'profile':
+      case "profile":
         return (
-          <ProfileSection
-            user={user}
-            onUpdateProfile={handleUpdateProfile}
-          />
+          <ProfileSection user={user} onUpdateProfile={handleUpdateProfile} />
         );
 
-      case 'addresses':
+      case "addresses":
         return (
           <AddressSection
             addresses={addresses}
@@ -469,7 +518,7 @@ const UserAccount = () => {
           />
         );
 
-      case 'orders':
+      case "orders":
         return (
           <OrderHistorySection
             orders={orders}
@@ -478,7 +527,7 @@ const UserAccount = () => {
           />
         );
 
-      case 'preferences':
+      case "preferences":
         return (
           <PreferencesSection
             preferences={preferences}
@@ -486,7 +535,7 @@ const UserAccount = () => {
           />
         );
 
-      case 'payment':
+      case "payment":
         return (
           <PaymentMethodsSection
             paymentMethods={paymentMethods}
@@ -496,7 +545,7 @@ const UserAccount = () => {
           />
         );
 
-      case 'security':
+      case "security":
         return (
           <SecuritySection
             onUpdatePassword={handleUpdatePassword}
@@ -509,11 +558,14 @@ const UserAccount = () => {
     }
   };
 
-  const navbarUser = user ? {
-    id: parseInt(user.id.replace(/\D/g, '')) || undefined,
-    name: user.name,
-    email: user.email
-  } : null;
+  const navbarUser = user
+    ? {
+        id: parseInt(user.id.replace(/\D/g, "")) || undefined,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      }
+    : null;
 
   if (isLoading) {
     return (
@@ -521,8 +573,14 @@ const UserAccount = () => {
         <Navbar user={navbarUser} />
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center">
-            <Icon name="Loader2" size={48} className="animate-spin text-primary mx-auto mb-4" />
-            <p className="text-lg font-body text-muted-foreground">Loading your account...</p>
+            <Icon
+              name="Loader2"
+              size={48}
+              className="animate-spin text-primary mx-auto mb-4"
+            />
+            <p className="text-lg font-body text-muted-foreground">
+              Loading your account...
+            </p>
           </div>
         </div>
       </div>
@@ -538,7 +596,7 @@ const UserAccount = () => {
       <Navbar
         user={navbarUser}
         onLogout={handleLogout}
-        onCartClick={() => router.push('/shopping-cart')}
+        onCartClick={() => router.push("/shopping-cart")}
         onSearch={() => {}}
         onAccountClick={handleAccountClick}
       />
@@ -548,17 +606,27 @@ const UserAccount = () => {
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-full flex items-center justify-center">
-                <Icon name="User" size={32} color="white" />
+              <div className="w-16 h-16 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-full flex items-center justify-center overflow-hidden relative">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Icon name="User" size={32} color="white" />
+                )}
               </div>
               <div>
-                <h1 className="text-3xl font-heading font-bold text-foreground">My Account</h1>
+                <h1 className="text-3xl font-heading font-bold text-foreground">
+                  My Account
+                </h1>
                 <p className="text-lg font-body text-muted-foreground">
-                  Welcome back, {user.name || 'User'}
+                  Welcome back, {user.name || "User"}
                 </p>
               </div>
             </div>
-            
+
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-card rounded-lg border border-border p-4">
@@ -567,24 +635,32 @@ const UserAccount = () => {
                     <Icon name="Package" size={20} className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-heading font-bold text-foreground">{user.totalOrders}</p>
-                    <p className="text-sm font-body text-muted-foreground">Total Orders</p>
+                    <p className="text-2xl font-heading font-bold text-foreground">
+                      {user.totalOrders}
+                    </p>
+                    <p className="text-sm font-body text-muted-foreground">
+                      Total Orders
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                     <Icon name="Heart" size={20} className="text-accent" />
                   </div>
                   <div>
-                    <p className="text-2xl font-heading font-bold text-foreground">{user.favoriteItems}</p>
-                    <p className="text-sm font-body text-muted-foreground">Favorite Items</p>
+                    <p className="text-2xl font-heading font-bold text-foreground">
+                      {user.favoriteItems}
+                    </p>
+                    <p className="text-sm font-body text-muted-foreground">
+                      Favorite Items
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
@@ -594,7 +670,9 @@ const UserAccount = () => {
                     <p className="text-2xl font-heading font-bold text-foreground">
                       {new Date(user.joinDate).getFullYear()}
                     </p>
-                    <p className="text-sm font-body text-muted-foreground">Member Since</p>
+                    <p className="text-sm font-body text-muted-foreground">
+                      Member Since
+                    </p>
                   </div>
                 </div>
               </div>
@@ -612,8 +690,8 @@ const UserAccount = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left font-body font-medium transition-all duration-200 ${
                         activeTab === tab.id
-                          ? 'bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground shadow-warm-sm'
-                          : 'text-foreground hover:bg-muted hover:text-primary'
+                          ? "bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground shadow-warm-sm"
+                          : "text-foreground hover:bg-muted hover:text-primary"
                       }`}
                     >
                       <Icon name={tab.icon} size={20} />
@@ -621,17 +699,19 @@ const UserAccount = () => {
                     </button>
                   ))}
                 </nav>
-                
+
                 {/* Quick Actions */}
                 <div className="mt-6 pt-6 border-t border-border">
-                  <h3 className="text-sm font-body font-medium text-muted-foreground mb-3">Quick Actions</h3>
+                  <h3 className="text-sm font-body font-medium text-muted-foreground mb-3">
+                    Quick Actions
+                  </h3>
                   <div className="space-y-2">
                     <Button
                       variant="ghost"
                       size="sm"
                       iconName="UtensilsCrossed"
                       className="w-full"
-                      onClick={() => router.push('/menu-catalog')}
+                      onClick={() => router.push("/menu-catalog")}
                     >
                       Browse Menu
                     </Button>
@@ -640,7 +720,7 @@ const UserAccount = () => {
                       size="sm"
                       iconName="ShoppingCart"
                       className="w-full"
-                      onClick={() => router.push('/shopping-cart')}
+                      onClick={() => router.push("/shopping-cart")}
                     >
                       View Cart
                     </Button>
@@ -649,7 +729,7 @@ const UserAccount = () => {
                       size="sm"
                       iconName="Home"
                       className="w-full"
-                      onClick={() => router.push('/')}
+                      onClick={() => router.push("/")}
                     >
                       Go Home
                     </Button>
@@ -659,9 +739,7 @@ const UserAccount = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3">
-              {renderTabContent()}
-            </div>
+            <div className="lg:col-span-3">{renderTabContent()}</div>
           </div>
         </div>
       </div>
