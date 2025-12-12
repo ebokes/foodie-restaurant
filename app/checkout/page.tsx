@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Navbar from "@/components/navbar/navbar";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
@@ -102,6 +103,7 @@ const CheckoutPage = () => {
         dispatch(clearCart());
       }
 
+      toast.success("Order placed successfully!");
       router.push(`/order-tracking?orderId=${orderId}`);
     } catch (error) {
       console.error("Checkout failed:", error);

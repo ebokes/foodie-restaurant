@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Icon from "../ui/app-icon";
 import Select from "../ui/select";
 
-// Define types
 interface Category {
   id: string;
   name: string;
-  icon: keyof typeof import("lucide-react"); // Changed to proper LucideIcons key type
+  icon: keyof typeof import("lucide-react");
   count: number;
   featured: boolean;
 }

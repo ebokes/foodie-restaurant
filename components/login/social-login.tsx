@@ -27,13 +27,7 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
       color: 'bg-white border-2 border-border text-foreground hover:bg-muted',
 
     },
-    {
-      id: 'facebook',
-      name: 'Facebook',
-      icon: 'Facebook',
-      color: 'bg-blue-600 text-white hover:bg-blue-700',
-
-    }];
+   ];
 
 
   const handleSocialLogin = async (provider: SocialProvider) => {
@@ -59,14 +53,14 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div >
         {socialProviders.map((provider) => (
           <Button
             key={provider.id}
             variant="outline"
             onClick={() => handleSocialLogin(provider)}
             disabled={isLoading}
-            className={`${provider.color} transition-all duration-200 hover:scale-102`}
+            className={`${provider.color} w-full transition-all duration-200 hover:scale-102`}
             iconName={provider.icon as any}>
             {provider.name}
           </Button>

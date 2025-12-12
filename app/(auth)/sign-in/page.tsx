@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/navbar/navbar';
-import LoginHeader from '@/components/login/login-header';
 import LoginForm from '@/components/login/login-form';
+import LoginHeader from '@/components/login/login-header';
 import SocialLogin from '@/components/login/social-login';
+import Navbar from '@/components/navbar/navbar';
 import Icon from '@/components/ui/app-icon';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { setUser, signOutUser, signInUser, signInWithGoogle } from '@/lib/store/slices/authSlice';
+import { signInUser, signInWithGoogle, signOutUser } from '@/lib/store/slices/authSlice';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const LoginPage = () => {
   const dispatch = useAppDispatch();

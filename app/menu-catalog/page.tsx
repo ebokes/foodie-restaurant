@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Header from "../../components/navbar/navbar";
 import BrowseByCategoryWithFilters from "../../components/menu-catalog/browse-by-category-with-filters";
 import MenuGrid from "../../components/menu-catalog/menu-grid";
@@ -86,16 +87,12 @@ const MenuCatalog = () => {
         // Local update for unauthenticated users
         dispatch(addItem(cartItem));
       }
-
-      console.log("Added to cart:", item);
     } catch (error) {
       console.error("Error adding to cart:", error);
     }
 
     // Show success feedback (you could add a toast notification here)
-    return new Promise((resolve) => {
-      setTimeout(resolve, 500);
-    });
+    toast.success(`Added ${item.name} to cart`);
   };
 
   return (
