@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar/navbar";
 import CartItem from "@/components/shopping-cart/cart-item";
-import OrderSummary from "@/components/shopping-cart/order-summary";
 import EmptyCart from "@/components/shopping-cart/empty-card";
+import OrderSummary from "@/components/shopping-cart/order-summary";
 import PromoCodeSection from "@/components/shopping-cart/promo-code-section";
 import Icon from "@/components/ui/app-icon";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/firebase/config";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
-  updateQuantity,
-  removeItem,
   applyPromo,
+  fetchCart,
+  removeCartItem,
+  removeItem,
   removePromo,
   updateCartQuantity,
-  removeCartItem,
-  fetchCart,
+  updateQuantity,
   type PromoCode,
 } from "@/lib/store/slices/cartSlice";
-import { auth } from "@/lib/firebase/config";
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const ShoppingCart = () => {
   const router = useRouter();
@@ -81,7 +81,7 @@ const ShoppingCart = () => {
           })
         ).unwrap();
       } catch (error) {
-        console.error("Error updating cart in Firebase:", error);
+        toast.error("Failed to update cart");
       }
     }
   };
@@ -100,7 +100,7 @@ const ShoppingCart = () => {
           })
         ).unwrap();
       } catch (error) {
-        console.error("Error removing item from Firebase:", error);
+        toast.error("Failed to remove item from cart");
       }
     }
   };
@@ -113,29 +113,26 @@ const ShoppingCart = () => {
   const handleApplyPromo = async (
     promoCode: string
   ): Promise<{ success: boolean; message?: string }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const promo = availablePromoCodes[promoCode];
-        const currentSubtotal = cartItems.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-        if (promo && currentSubtotal >= promo.minOrder) {
-          dispatch(applyPromo(promo));
-          resolve({ success: true });
-        } else if (promo) {
-          resolve({
-            success: false,
-            message: `Minimum order of $${promo.minOrder} required`,
-          });
-        } else {
-          resolve({
-            success: false,
-            message: "Invalid promo code",
-          });
-        }
-      }, 1000);
-    });
+    // In a real app, this would verify with backend
+    const promo = availablePromoCodes[promoCode];
+    const currentSubtotal = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    if (promo && currentSubtotal >= promo.minOrder) {
+      dispatch(applyPromo(promo));
+      return { success: true };
+    } else if (promo) {
+      return {
+        success: false,
+        message: `Minimum order of $${promo.minOrder} required`,
+      };
+    } else {
+      return {
+        success: false,
+        message: "Invalid promo code",
+      };
+    }
   };
 
   const handleRemovePromo = () => {
@@ -147,18 +144,14 @@ const ShoppingCart = () => {
 
     if (!user) {
       // If user is not logged in, redirect to login page
-      // We can pass a return URL to redirect back after login if needed
       router.push("/login?redirect=/shopping-cart");
       setIsCheckoutLoading(false);
       return;
     }
 
-    // Simulate checkout process
-    setTimeout(() => {
-      setIsCheckoutLoading(false);
-      // Navigate to checkout page
-      router.push("/checkout");
-    }, 1000);
+    // Proceed to checkout
+    setIsCheckoutLoading(false);
+    router.push("/checkout");
   };
 
   // Calculate totals

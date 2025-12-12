@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Foodie Restaurant
+
+**Foodie Restaurant** is a modern, full-stack web application built to handle the complete customer journey for a restaurant business—from browsing a menu and booking tables to ordering food and tracking delivery.
+
+## Key Features
+
+- **Menu & Ordering**: Browse food items with filtering, add to cart, and complete purchase with a smooth checkout flow.
+- **Reservation System**: Book tables directly and manage reservations via a dedicated dashboard.
+- **User Accounts**: Comprehensive Sign In/Sign Up (including Social Login) and user profile management.
+- **Order Tracking**: Real-time status updates for customer orders.
+- **Tech Stack**: Next.js 16 (App Router), TypeScript, Tailwind CSS, Redux Toolkit, and Firebase.
 
 ## Getting Started
 

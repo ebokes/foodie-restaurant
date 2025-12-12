@@ -1,34 +1,33 @@
 "use client";
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface SocialLoginProps {
   onSocialLogin: (provider: string) => Promise<void>;
   isLoading?: boolean;
 }
 
-
-
 interface SocialProvider {
   id: string;
   name: string;
   icon: string;
   color: string;
-
 }
 
-const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = false }) => {
+const SocialLogin: React.FC<SocialLoginProps> = ({
+  onSocialLogin,
+  isLoading = false,
+}) => {
   const socialProviders: SocialProvider[] = [
     {
-      id: 'google',
-      name: 'Google',
-      icon: 'Chrome',
-      color: 'bg-white border-2 border-border text-foreground hover:bg-muted',
-
+      id: "google",
+      name: "Google",
+      icon: "Chrome",
+      color: "bg-white border-2 border-border text-foreground hover:bg-muted",
     },
-   ];
-
+  ];
 
   const handleSocialLogin = async (provider: SocialProvider) => {
     if (isLoading) return;
@@ -37,7 +36,7 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
       // Pass provider ID to parent component for Firebase authentication
       await onSocialLogin(provider.id);
     } catch (error) {
-      console.error('Social login error:', error);
+      toast.error("Social login failed");
     }
   };
 
@@ -53,7 +52,7 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
           </span>
         </div>
       </div>
-      <div >
+      <div>
         {socialProviders.map((provider) => (
           <Button
             key={provider.id}
@@ -61,18 +60,19 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
             onClick={() => handleSocialLogin(provider)}
             disabled={isLoading}
             className={`${provider.color} w-full transition-all duration-200 hover:scale-102`}
-            iconName={provider.icon as any}>
+            iconName={provider.icon as any}
+          >
             {provider.name}
           </Button>
         ))}
       </div>
       <div className="text-center">
         <p className="text-xs font-body text-muted-foreground">
-          By signing in, you agree to our{' '}
+          By signing in, you agree to our{" "}
           <button className="text-primary hover:text-primary/80 transition-colors duration-200">
             Terms of Service
-          </button>{' '}
-          and{' '}
+          </button>{" "}
+          and{" "}
           <button className="text-primary hover:text-primary/80 transition-colors duration-200">
             Privacy Policy
           </button>
@@ -80,7 +80,6 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onSocialLogin, isLoading = fa
       </div>
     </div>
   );
-
 };
 
 export default SocialLogin;

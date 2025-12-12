@@ -1,15 +1,7 @@
 import React from "react";
 import * as LucideIcons from "lucide-react";
 import Icon from "../ui/app-icon";
-
-// Define the category type with proper icon type
-interface Category {
-  id: string;
-  name: string;
-  icon: keyof typeof LucideIcons;
-  count: number;
-  featured?: boolean;
-}
+import { Category } from "@/types/menu-catalog";
 
 // Define props interface
 interface CategoryFilterProps {
@@ -62,8 +54,7 @@ const CategoryFilter = ({
             >
               {category?.count}
             </span>
-
-            {/* Featured indicator */}
+            
             {category?.featured && (
               <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse ml-1"></div>
             )}

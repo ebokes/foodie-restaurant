@@ -1,27 +1,24 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import Image from "next/image";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { CartItem as CartItemType } from "@/types/cart";
 
 interface CartItemProps {
-  item: {
-    id: number;
-    name: string;
-    price: number;
-    quantity: number;
-    image: string;
-    imageAlt: string;
-    customizations: string[];
-    specialRequests: string | null;
-  };
+  item: CartItemType;
   onUpdateQuantity: (itemId: number, newQuantity: number) => void;
   onRemove: (itemId: number) => void;
   onModify: (itemId: number) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove, onModify }) => {
+const CartItem: React.FC<CartItemProps> = ({
+  item,
+  onUpdateQuantity,
+  onRemove,
+  onModify,
+}) => {
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity <= 0) {
       onRemove(item.id);
@@ -53,11 +50,11 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove, o
               <h3 className="font-heading font-bold text-foreground text-lg leading-tight">
                 {item.name}
               </h3>
-              
+
               {item.customizations && item.customizations.length > 0 && (
                 <div className="mt-1">
                   <p className="text-sm text-muted-foreground">
-                    {item.customizations.join(', ')}
+                    {item.customizations.join(", ")}
                   </p>
                 </div>
               )}
@@ -104,11 +101,11 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove, o
               >
                 <Icon name="Minus" size={16} />
               </Button>
-              
+
               <span className="font-body font-medium text-foreground min-w-8 text-center">
                 {item.quantity}
               </span>
-              
+
               <Button
                 variant="outline"
                 size="icon"
@@ -125,16 +122,18 @@ const CartItem: React.FC<CartItemProps> = ({ item, onUpdateQuantity, onRemove, o
                 variant="ghost"
                 size="sm"
                 onClick={() => onModify(item.id)}
-                iconName="Edit2">
+                iconName="Edit2"
+              >
                 Modify
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemove(item.id)}
                 iconName="Trash2"
-                className="text-error hover:text-error hover:bg-error/10">
+                className="text-error hover:text-error hover:bg-error/10"
+              >
                 Remove
               </Button>
             </div>

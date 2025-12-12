@@ -1,19 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
+
+import FooterSection from "@/components/footer/footer";
+import { categories } from "@/lib/constants";
+import { auth } from "@/lib/firebase/config";
+import { menuService } from "@/lib/firebase/menu";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { addCartItem, addItem } from "@/lib/store/slices/cartSlice";
+import { Filters, MenuItem } from "@/types/menu-catalog";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
-import Header from "../../components/navbar/navbar";
 import BrowseByCategoryWithFilters from "../../components/menu-catalog/browse-by-category-with-filters";
 import MenuGrid from "../../components/menu-catalog/menu-grid";
+import Header from "../../components/navbar/navbar";
 import Icon from "../../components/ui/app-icon";
-import { categories } from "@/lib/constants";
-import { menuService } from "@/lib/firebase/menu";
-import { Filters, MenuItem } from "@/types/menu-catalog";
-import FooterSection from "@/components/footer/footer";
-import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { addItem, addCartItem } from "@/lib/store/slices/cartSlice";
-import { auth } from "@/lib/firebase/config";
 
 const MenuCatalog = () => {
   const router = useRouter();
@@ -40,7 +42,7 @@ const MenuCatalog = () => {
         const items = await menuService.getMenuItems();
         setMenuItems(items);
       } catch (error) {
-        console.error("Error fetching menu items:", error);
+        toast.error("Failed to fetch menu items");
       } finally {
         setLoading(false);
       }
@@ -48,6 +50,21 @@ const MenuCatalog = () => {
 
     fetchMenuItems();
   }, []);
+
+  // Calculate dynamic category counts
+  const categoriesWithCounts = useMemo(() => {
+    return categories.map((category) => {
+      // For "All Items", return total count
+      if (category.id === "all") {
+        return { ...category, count: menuItems.length };
+      }
+      // For other categories, filter and count
+      const count = menuItems.filter(
+        (item) => item.category === category.id
+      ).length;
+      return { ...category, count };
+    });
+  }, [menuItems]);
 
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategory(categoryId);
@@ -80,18 +97,15 @@ const MenuCatalog = () => {
             })
           ).unwrap();
         } catch (error) {
-          console.error("Error syncing cart with Firebase:", error);
-          // In production, you might want to show an error to the user
+          toast.error("Failed to add item to cart");
         }
       } else {
-        // Local update for unauthenticated users
         dispatch(addItem(cartItem));
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      toast.error("Failed to add item to cart");
     }
 
-    // Show success feedback (you could add a toast notification here)
     toast.success(`Added ${item.name} to cart`);
   };
 
@@ -104,7 +118,13 @@ const MenuCatalog = () => {
       <main className="">
         {/* Hero Section */}
         <section className="bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground py-6 lg:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
             <div className="text-center">
               <h1 className="text-2xl lg:text-4xl font-heading font-bold mb-3">
                 Our Menu
@@ -115,16 +135,22 @@ const MenuCatalog = () => {
                 story of flavor and passion.
               </p>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Menu Content */}
         <section className="py-8 lg:py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
             <div className="space-y-8">
               {/* Unified Browse by Category with Filters & Sort */}
               <BrowseByCategoryWithFilters
-                categories={categories}
+                categories={categoriesWithCounts}
                 activeCategory={activeCategory}
                 onCategoryChange={handleCategoryChange}
                 onFiltersChange={handleFiltersChange}
@@ -139,12 +165,18 @@ const MenuCatalog = () => {
                 filters={filters}
               />
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Call to Action Section */}
         <section className="bg-muted py-12 lg:py-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+          >
             <div className="bg-card rounded-2xl p-8 lg:p-12 shadow-warm">
               <div className="w-16 h-16 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icon name="Phone" size={24} color="white" />
@@ -174,7 +206,7 @@ const MenuCatalog = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
       <FooterSection />

@@ -1,17 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
-import Icon, { type IconProps } from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import Input from '@/components/ui/input';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-}
+import React, { useState } from "react";
+import Icon, { type IconProps } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import Input from "@/components/ui/input";
+import { User } from "@/types/user";
 
 interface ProfileSectionProps {
   user: User;
@@ -32,48 +25,51 @@ interface Errors {
   dateOfBirth?: string;
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }) => {
+const ProfileSection: React.FC<ProfileSectionProps> = ({
+  user,
+  onUpdateProfile,
+}) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
-    name: user.name || '',
-    email: user.email || '',
-    phone: user.phone || '',
-    dateOfBirth: user.dateOfBirth || ''
+    name: user.name || "",
+    email: user.email || "",
+    phone: user.phone || "",
+    dateOfBirth: user.dateOfBirth || "",
   });
   const [errors, setErrors] = useState<Errors>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (errors[name as keyof Errors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
-    
+
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = "Phone number is required";
     } else if (!/^\(\d{3}\) \d{3}-\d{4}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number (XXX) XXX-XXXX';
+      newErrors.phone = "Please enter a valid phone number (XXX) XXX-XXXX";
     }
 
     setErrors(newErrors);
@@ -89,17 +85,17 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
 
   const handleCancel = (): void => {
     setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || '',
-      dateOfBirth: user.dateOfBirth || ''
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      dateOfBirth: user.dateOfBirth || "",
     });
     setErrors({});
     setIsEditing(false);
   };
 
   const formatPhoneNumber = (value: string): string => {
-    const cleaned = value.replace(/\D/g, '');
+    const cleaned = value.replace(/\D/g, "");
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
     if (match) {
       return `(${match[1]}) ${match[2]}-${match[3]}`;
@@ -109,9 +105,9 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const formatted = formatPhoneNumber(e.target.value);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      phone: formatted
+      phone: formatted,
     }));
   };
 
@@ -123,8 +119,12 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
             <Icon name="User" size={24} color="white" />
           </div>
           <div>
-            <h2 className="text-xl font-heading font-bold text-foreground">Profile Information</h2>
-            <p className="text-sm font-body text-muted-foreground">Manage your personal details</p>
+            <h2 className="text-xl font-heading font-bold text-foreground">
+              Profile Information
+            </h2>
+            <p className="text-sm font-body text-muted-foreground">
+              Manage your personal details
+            </p>
           </div>
         </div>
         {!isEditing && (
@@ -151,7 +151,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
                 placeholder="Enter your full name"
                 required
               />
-              
+
               <Input
                 label="Email Address"
                 type="email"
@@ -162,7 +162,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
                 placeholder="Enter your email"
                 required
               />
-              
+
               <Input
                 label="Phone Number"
                 type="tel"
@@ -173,7 +173,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
                 placeholder="(555) 123-4567"
                 required
               />
-              
+
               <Input
                 label="Date of Birth"
                 type="date"
@@ -185,18 +185,10 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
             </div>
 
             <div className="flex items-center space-x-3 pt-4">
-              <Button
-                variant="default"
-                iconName="Check"
-                onClick={handleSave}
-              >
+              <Button variant="default" iconName="Check" onClick={handleSave}>
                 Save Changes
               </Button>
-              <Button
-                variant="outline"
-                iconName="X"
-                onClick={handleCancel}
-              >
+              <Button variant="outline" iconName="X" onClick={handleCancel}>
                 Cancel
               </Button>
             </div>
@@ -204,28 +196,44 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ user, onUpdateProfile }
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-sm font-body font-medium text-muted-foreground">Full Name</label>
-              <p className="text-base font-body text-foreground">{user.name || 'Not provided'}</p>
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-sm font-body font-medium text-muted-foreground">Email Address</label>
-              <p className="text-base font-body text-foreground">{user.email || 'Not provided'}</p>
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-sm font-body font-medium text-muted-foreground">Phone Number</label>
-              <p className="text-base font-body text-foreground">{user.phone || 'Not provided'}</p>
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-sm font-body font-medium text-muted-foreground">Date of Birth</label>
+              <label className="text-sm font-body font-medium text-muted-foreground">
+                Full Name
+              </label>
               <p className="text-base font-body text-foreground">
-                {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }) : 'Not provided'}
+                {user.name || "Not provided"}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-body font-medium text-muted-foreground">
+                Email Address
+              </label>
+              <p className="text-base font-body text-foreground">
+                {user.email || "Not provided"}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-body font-medium text-muted-foreground">
+                Phone Number
+              </label>
+              <p className="text-base font-body text-foreground">
+                {user.phone || "Not provided"}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-body font-medium text-muted-foreground">
+                Date of Birth
+              </label>
+              <p className="text-base font-body text-foreground">
+                {user.dateOfBirth
+                  ? new Date(user.dateOfBirth).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Not provided"}
               </p>
             </div>
           </div>

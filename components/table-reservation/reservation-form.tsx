@@ -4,11 +4,7 @@ import Input from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Select from "@/components/ui/select";
-
-interface Restaurant {
-  name: string;
-  address: string;
-}
+import { Restaurant } from "@/types/restaurant";
 
 interface FormData {
   guestCount: number;

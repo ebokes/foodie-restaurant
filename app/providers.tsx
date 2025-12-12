@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { setUser } from '@/lib/store/slices/authSlice';
 import { authService } from '@/lib/firebase/auth';
 
-// Component to initialize auth listener
+//initialize auth listener
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
 

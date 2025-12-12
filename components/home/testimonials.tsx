@@ -5,56 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Icon from "../ui/app-icon";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import { testimonials } from "@/lib/constants";
 
 const TestimonialsSection = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-
-  const testimonials = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      role: "Food Blogger",
-      avatar: "https://images.unsplash.com/photo-1618636533948-bb301ef06b31",
-      avatarAlt:
-        "Professional headshot of smiling woman with brown hair in casual blue shirt",
-      rating: 5,
-      text: "Absolutely incredible! The flavors are authentic and the presentation is beautiful. Foodies has become my go-to restaurant for special occasions and casual dining alike.",
-      date: "2 days ago",
-    },
-    {
-      id: 2,
-      name: "Michael Rodriguez",
-      role: "Local Resident",
-      avatar: "https://images.unsplash.com/photo-1724128195747-dd25cba7860f",
-      avatarAlt:
-        "Professional headshot of Hispanic man with short black hair in navy suit smiling at camera",
-      rating: 5,
-      text: "The best burger I've ever had! The ingredients are fresh, the service is fast, and the atmosphere is perfect for families. Highly recommend the weekend specials!",
-      date: "1 week ago",
-    },
-    {
-      id: 3,
-      name: "Emily Chen",
-      role: "Business Owner",
-      avatar: "https://images.unsplash.com/photo-1684262855358-88f296a2cfc2",
-      avatarAlt:
-        "Professional headshot of Asian woman with long black hair in white blazer smiling confidently",
-      rating: 5,
-      text: "Outstanding quality and service! I order from Foodies for all my business meetings. The food always arrives on time and exceeds expectations. Five stars!",
-      date: "3 days ago",
-    },
-    {
-      id: 4,
-      name: "David Thompson",
-      role: "Chef",
-      avatar: "https://images.unsplash.com/photo-1607845046636-dca2447c0dee",
-      avatarAlt:
-        "Professional headshot of middle-aged man with beard wearing chef's coat in kitchen setting",
-      rating: 5,
-      text: "As a fellow chef, I appreciate the attention to detail and quality ingredients. The pasta dishes are exceptional and remind me of authentic Italian cuisine.",
-      date: "5 days ago",
-    },
-  ];
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
@@ -112,7 +66,13 @@ const TestimonialsSection = () => {
         </motion.div>
 
         {/* Testimonial Carousel */}
-        <div className="relative max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="relative max-w-4xl mx-auto"
+        >
           <div className="relative bg-card rounded-3xl shadow-warm-xl overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
@@ -208,13 +168,13 @@ const TestimonialsSection = () => {
               />
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Call to Action */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
           className="text-center mt-12"
         >

@@ -1,20 +1,7 @@
 import { useState } from "react";
 import Icon from "../ui/app-icon";
 import Select from "../ui/select";
-
-interface Category {
-  id: string;
-  name: string;
-  icon: keyof typeof import("lucide-react");
-  count: number;
-  featured: boolean;
-}
-
-interface Filters {
-  dietary: string;
-  priceRange: string;
-  sortBy: string;
-}
+import { Category, Filters } from "@/types/menu-catalog";
 
 interface SelectOption {
   value: string;

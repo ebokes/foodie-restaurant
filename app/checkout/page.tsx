@@ -63,7 +63,7 @@ const CheckoutPage = () => {
     if (!auth.currentUser) return;
 
     if (!isFormValid) {
-      alert("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -106,8 +106,7 @@ const CheckoutPage = () => {
       toast.success("Order placed successfully!");
       router.push(`/order-tracking?orderId=${orderId}`);
     } catch (error) {
-      console.error("Checkout failed:", error);
-      alert("Failed to process order. Please try again.");
+      toast.error("Failed to process order. Please try again.");
     } finally {
       setIsLoading(false);
     }

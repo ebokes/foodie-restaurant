@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Navbar from "@/components/navbar/navbar";
 import ProfileSection from "@/components/user-account/profile-section";
 import AddressSection from "@/components/user-account/address-section";
@@ -240,7 +241,7 @@ const UserAccount = () => {
         const userPaymentMethods = await userService.getPaymentMethods(userId);
         setPaymentMethods(userPaymentMethods);
       } catch (error) {
-        console.error("Error loading user data:", error);
+        toast.error("Failed to load user data");
       } finally {
         setIsLoading(false);
       }
@@ -271,9 +272,9 @@ const UserAccount = () => {
 
       // Update Redux store
       dispatch(updateUser(updatedData));
-      console.log("Profile updated:", updatedData);
+      toast.success("Profile updated successfully");
     } catch (error) {
-      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     }
   };
 
@@ -303,7 +304,7 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error("Error saving address:", error);
+      toast.error("Failed to save address");
       // Revert on error
       setAddresses(addresses);
     }
@@ -329,7 +330,7 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error("Error updating address:", error);
+      toast.error("Failed to update address");
       setAddresses(addresses);
     }
   };
@@ -345,14 +346,13 @@ const UserAccount = () => {
       await userService.updateAddresses(auth.currentUser.uid, updatedAddresses);
       dispatch(updateUser({ addresses: updatedAddresses }));
     } catch (error) {
-      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address");
       setAddresses(addresses);
     }
   };
 
   // Order handlers
   const handleReorder = (order: Order): void => {
-    console.log("Reordering:", order);
     router.push("/shopping-cart");
   };
 
@@ -388,7 +388,7 @@ const UserAccount = () => {
           : null
       );
     } catch (error) {
-      console.error("Error updating preferences:", error);
+      toast.error("Failed to update preferences");
     }
   };
 
@@ -416,7 +416,7 @@ const UserAccount = () => {
     try {
       await userService.addPaymentMethod(auth.currentUser.uid, paymentMethod);
     } catch (error) {
-      console.error("Error adding payment method:", error);
+      toast.error("Failed to add payment method");
       setPaymentMethods(paymentMethods);
     }
   };
@@ -438,7 +438,7 @@ const UserAccount = () => {
         paymentMethodId
       );
     } catch (error) {
-      console.error("Error deleting payment method:", error);
+      toast.error("Failed to delete payment method");
       setPaymentMethods(paymentMethods);
     }
   };
@@ -462,7 +462,7 @@ const UserAccount = () => {
         paymentMethodId
       );
     } catch (error) {
-      console.error("Error setting default payment method:", error);
+      toast.error("Failed to set default payment method");
     }
   };
 
@@ -472,7 +472,7 @@ const UserAccount = () => {
     newPassword: string;
     confirmPassword: string;
   }): void => {
-    console.log("Password update requested:", passwordData);
+    toast.info("Password update feature coming soon");
   };
 
   const handleUpdateSecurity = (securitySettings: {
@@ -480,7 +480,7 @@ const UserAccount = () => {
     loginNotifications: boolean;
     sessionTimeout: string;
   }): void => {
-    console.log("Security settings updated:", securitySettings);
+    toast.success("Security settings updated");
   };
 
   // Header handlers
@@ -492,7 +492,7 @@ const UserAccount = () => {
   const handleAccountClick = (action: string): void => {
     if (action === "logout") {
       handleLogout().catch((error) => {
-        console.error("Logout error:", error);
+        toast.error("Logout failed");
       });
     }
   };

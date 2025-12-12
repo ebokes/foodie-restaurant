@@ -1,66 +1,58 @@
 "use client";
 
-import React, { useState } from 'react';
-import Icon, { type IconProps } from '@/components/ui/app-icon';
+import React, { useState } from "react";
+import { toast } from "sonner";
+import Icon, { type IconProps } from "@/components/ui/app-icon";
 
 interface SocialRegistrationProps {
   onSocialRegister: (provider: string) => Promise<void>;
 }
 
-type ProviderId = 'google' | 'facebook' | 'apple';
+type ProviderId = "google" | "facebook" | "apple";
 
-const SocialRegistration: React.FC<SocialRegistrationProps> = ({ onSocialRegister }) => {
+const SocialRegistration: React.FC<SocialRegistrationProps> = ({
+  onSocialRegister,
+}) => {
   const [isLoading, setIsLoading] = useState<Record<ProviderId, boolean>>({
     google: false,
     facebook: false,
-    apple: false
+    apple: false,
   });
 
   const handleSocialRegister = async (provider: ProviderId) => {
-    setIsLoading(prev => ({ ...prev, [provider]: true } as Record<ProviderId, boolean>));
+    setIsLoading(
+      (prev) => ({ ...prev, [provider]: true } as Record<ProviderId, boolean>)
+    );
 
     try {
       // Pass provider ID to parent component for Firebase authentication
       await onSocialRegister(provider);
     } catch (error) {
-      console.error(`${provider} registration failed:`, error);
+      toast.error(`${provider} registration failed`);
     } finally {
-      setIsLoading(prev => ({ ...prev, [provider]: false } as Record<ProviderId, boolean>));
+      setIsLoading(
+        (prev) =>
+          ({ ...prev, [provider]: false } as Record<ProviderId, boolean>)
+      );
     }
   };
 
   const socialProviders: Array<{
     id: ProviderId;
     name: string;
-    icon: IconProps['name'];
+    icon: IconProps["name"];
     bgColor: string;
     textColor: string;
     borderColor: string;
   }> = [
     {
-      id: 'google',
-      name: 'Google',
-      icon: 'Chrome',
-      bgColor: 'bg-white hover:bg-gray-50',
-      textColor: 'text-gray-700',
-      borderColor: 'border-gray-300'
+      id: "google",
+      name: "Google",
+      icon: "Chrome",
+      bgColor: "bg-white hover:bg-gray-50",
+      textColor: "text-gray-700",
+      borderColor: "border-gray-300",
     },
-    // {
-    //   id: 'facebook',
-    //   name: 'Facebook',
-    //   icon: 'Facebook',
-    //   bgColor: 'bg-blue-600 hover:bg-blue-700',
-    //   textColor: 'text-white',
-    //   borderColor: 'border-blue-600'
-    // },
-    // {
-    //   id: 'apple',
-    //   name: 'Apple',
-    //   icon: 'Apple',
-    //   bgColor: 'bg-black hover:bg-gray-900',
-    //   textColor: 'text-white',
-    //   borderColor: 'border-black'
-    // }
   ];
 
   return (
@@ -98,18 +90,18 @@ const SocialRegistration: React.FC<SocialRegistrationProps> = ({ onSocialRegiste
               {provider.name}
             </span>
             <span className="font-medium text-sm sm:hidden">
-              {isLoading[provider.id] ? 'Connecting...' : provider.name}
+              {isLoading[provider.id] ? "Connecting..." : provider.name}
             </span>
           </button>
         ))}
       </div>
       <div className="text-center">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          By continuing with social registration, you agree to our{' '}
+          By continuing with social registration, you agree to our{" "}
           <button className="text-primary hover:text-primary/80 transition-colors duration-200">
             Terms of Service
-          </button>{' '}
-          and{' '}
+          </button>{" "}
+          and{" "}
           <button className="text-primary hover:text-primary/80 transition-colors duration-200">
             Privacy Policy
           </button>

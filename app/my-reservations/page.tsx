@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAppSelector } from "@/lib/store/hooks";
 import {
   reservationService,
@@ -32,7 +33,7 @@ const MyReservations = () => {
         );
         setReservations(data);
       } catch (error) {
-        console.error("Failed to fetch reservations:", error);
+        toast.error("Failed to fetch reservations");
       } finally {
         setLoading(false);
       }
@@ -54,8 +55,7 @@ const MyReservations = () => {
         )
       );
     } catch (error) {
-      console.error("Failed to cancel reservation:", error);
-      alert("Failed to cancel reservation. Please try again.");
+      toast.error("Failed to cancel reservation");
     } finally {
       setCancellingId(null);
     }

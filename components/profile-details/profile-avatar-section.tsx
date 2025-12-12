@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface User {
   name?: string;
@@ -14,7 +15,10 @@ interface ProfileAvatarSectionProps {
   onUpdateUser: (updates: Partial<User>) => void;
 }
 
-const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpdateUser }) => {
+const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({
+  user,
+  onUpdateUser,
+}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
@@ -22,36 +26,47 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      toast.error("File size must be less than 5MB");
       return;
     }
 
     setIsUploading(true);
-    
+
     try {
-      // Simulate file upload process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Create a temporary URL for preview
-      const imageUrl = URL.createObjectURL(file);
-      
+      const { storage } = await import("@/lib/firebase/config");
+      const { ref, uploadBytes, getDownloadURL } = await import(
+        "firebase/storage"
+      );
+      const { auth } = await import("@/lib/firebase/config");
+
+      if (!auth.currentUser) throw new Error("User not authenticated");
+
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `avatar-${Date.now()}.${fileExtension}`;
+      const storageRef = ref(
+        storage,
+        `users/${auth.currentUser.uid}/avatars/${fileName}`
+      );
+
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
       // Update user avatar
       onUpdateUser({
-        avatar: imageUrl,
-        avatarAlt: `Updated profile picture of ${user.name || 'user'}`
+        avatar: downloadURL,
+        avatarAlt: `Updated profile picture of ${user.name || "user"}`,
       });
 
-      console.log('Avatar uploaded successfully');
+      toast.success("Avatar uploaded successfully");
     } catch (error) {
-      console.error('Error uploading avatar:', error);
-      alert('Error uploading image. Please try again.');
+      toast.error("Error uploading image. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -65,7 +80,7 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragActive(false);
-    
+
     const file = e.dataTransfer.files?.[0];
     handleFileSelect(file);
   };
@@ -83,7 +98,7 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
   const removeAvatar = () => {
     onUpdateUser({
       avatar: null,
-      avatarAlt: null
+      avatarAlt: null,
     });
   };
 
@@ -94,8 +109,12 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
           <Icon name="Camera" size={20} color="white" />
         </div>
         <div>
-          <h2 className="text-xl font-heading font-bold text-foreground">Profile Picture</h2>
-          <p className="text-sm font-body text-muted-foreground">Upload and manage your profile picture</p>
+          <h2 className="text-xl font-heading font-bold text-foreground">
+            Profile Picture
+          </h2>
+          <p className="text-sm font-body text-muted-foreground">
+            Upload and manage your profile picture
+          </p>
         </div>
       </div>
 
@@ -103,28 +122,40 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
         {/* Current Avatar Display */}
         <div className="shrink-0">
           <div className="relative">
-            {user.avatar && user.avatar.trim() !== '' ? (
+            {user.avatar && user.avatar.trim() !== "" ? (
               <img
                 src={user.avatar}
-                alt={user.avatarAlt || `Profile picture of ${user.name || 'user'}`}
+                alt={
+                  user.avatarAlt || `Profile picture of ${user.name || "user"}`
+                }
                 className="w-32 h-32 rounded-full object-cover border-4 border-border shadow-warm"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
+                  e.currentTarget.style.display = "none";
+                  const fallback = e.currentTarget
+                    .nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = "flex";
                 }}
               />
             ) : null}
-            <div 
-              className={`w-32 h-32 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold shadow-warm ${user.avatar && user.avatar.trim() !== '' ? 'hidden' : ''}`}
+            <div
+              className={`w-32 h-32 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold shadow-warm ${
+                user.avatar && user.avatar.trim() !== "" ? "hidden" : ""
+              }`}
             >
-              {user.name ? user.name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
+              {user.name
+                ? user.name.charAt(0).toUpperCase()
+                : user.email?.charAt(0).toUpperCase() || "U"}
             </div>
-            
+
             {/* Loading Overlay */}
             {isUploading && (
               <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                <Icon name="Loader2" size={24} color="white" className="animate-spin" />
+                <Icon
+                  name="Loader2"
+                  size={24}
+                  color="white"
+                  className="animate-spin"
+                />
               </div>
             )}
           </div>
@@ -137,15 +168,20 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
-              dragActive 
-                ? 'border-primary bg-primary/5' :'border-border hover:border-primary/50 hover:bg-muted/50'
+              dragActive
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50 hover:bg-muted/50"
             }`}
           >
             <div className="space-y-4">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                <Icon name="Upload" size={24} className="text-muted-foreground" />
+                <Icon
+                  name="Upload"
+                  size={24}
+                  className="text-muted-foreground"
+                />
               </div>
-              
+
               <div>
                 <p className="text-sm font-body text-foreground">
                   <strong>Click to upload</strong> or drag and drop
@@ -154,7 +190,7 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
                   PNG, JPG, GIF up to 5MB
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <input
                   type="file"
@@ -168,11 +204,13 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
                   variant="outline"
                   iconName="Upload"
                   disabled={isUploading}
-                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById("avatar-upload")?.click()
+                  }
                 >
-                  {isUploading ? 'Uploading...' : 'Choose File'}
+                  {isUploading ? "Uploading..." : "Choose File"}
                 </Button>
-                
+
                 {user.avatar && (
                   <Button
                     variant="ghost"
@@ -190,7 +228,9 @@ const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({ user, onUpd
 
           {/* Upload Guidelines */}
           <div className="mt-4 p-4 bg-muted rounded-lg">
-            <h4 className="text-sm font-body font-medium text-foreground mb-2">Photo Guidelines:</h4>
+            <h4 className="text-sm font-body font-medium text-foreground mb-2">
+              Photo Guidelines:
+            </h4>
             <ul className="text-xs font-body text-muted-foreground space-y-1">
               <li>• Use a clear, recent photo of yourself</li>
               <li>• Square photos work best (1:1 aspect ratio)</li>

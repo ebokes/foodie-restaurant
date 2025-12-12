@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 
 const Hero = () => {
   const router = useRouter();
@@ -14,40 +15,84 @@ const Hero = () => {
           alt="Hero Image"
           fill={true}
           className="object-cover absolute inset-0 z-20"
+          priority
+          sizes="100vw"
+          quality={85}
         />
         <div className="absolute inset-0 bg-black opacity-50 z-30"></div>
       </div>
       <div className="relative"> </div>
       <div className="max-w-3xl mx-auto z-40 relative text-center py-32 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-5xl sm:text-6xl lg:text-8xl font-heading font-bold text-white leading-tight mb-8 drop-shadow-2xl">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-5xl sm:text-6xl lg:text-8xl font-heading font-bold text-white leading-tight mb-8 drop-shadow-2xl"
+        >
           Sunny food.
           <br />
           <span className="text-orange-400">Golden mood.</span>
-        </h1>
-        <p className="text-2xl sm:text-3xl lg:text-4xl text-white font-semibold mb-4 drop-shadow-lg">
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-2xl sm:text-3xl lg:text-4xl text-white font-semibold mb-4 drop-shadow-lg"
+        >
           🎉 Grand Opening Special! 🎉
-        </p>
-        <p className="text-xl sm:text-2xl text-orange-100 font-medium mb-6 drop-shadow-md">
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl sm:text-2xl text-orange-100 font-medium mb-6 drop-shadow-md"
+        >
           Get{" "}
           <span className="text-orange-400 font-bold text-2xl sm:text-3xl">
             25% OFF
           </span>{" "}
           your first order +
           <span className="text-white font-bold"> FREE delivery</span>
-        </p>
-        <div className="flex flex-wrap justify-center gap-4 text-lg sm:text-xl text-white">
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-wrap justify-center gap-4 text-lg sm:text-xl text-white"
+        >
           <span className="bg-orange-500/80 px-4 py-2 rounded-full backdrop-blur-sm">
             ⚡ Fresh ingredients daily
           </span>
           <span className="bg-orange-500/80 px-4 py-2 rounded-full backdrop-blur-sm">
             🍽️ Tasty food for you
           </span>
-        </div>
-        <p className="text-lg text-orange-200 mt-4 font-medium">
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-lg text-orange-200 mt-4 font-medium"
+        >
           *Limited time offer - Use code:{" "}
           <span className="text-orange-400 font-bold">GOLDEN25</span>
-        </p>
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mt-16">
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center mt-16"
+        >
           <Button
             as="link"
             variant="destructive"
@@ -67,7 +112,7 @@ const Hero = () => {
           >
             Order Online
           </Button>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

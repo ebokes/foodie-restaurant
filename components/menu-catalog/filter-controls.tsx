@@ -4,12 +4,10 @@ import Icon from "../ui/app-icon";
 // import Icon from "../../../components/AppIcon";
 // import Select from "../../../components/ui/Select";
 
+import { Filters } from "@/types/menu-catalog";
+
 interface FilterControlsProps {
-  onFiltersChange: (filters: {
-    dietary: string;
-    priceRange: string;
-    sortBy: string;
-  }) => void;
+  onFiltersChange: (filters: Filters) => void;
   className?: string;
 }
 
@@ -55,7 +53,6 @@ const FilterControls = ({
   ];
 
   const handleFilterChange = ({ key, value }: FilterOption) => {
-    // Convert value to string since our filters state expects string values
     const stringValue = String(value);
     const newFilters = { ...filters, [key]: stringValue };
     setFilters(newFilters);

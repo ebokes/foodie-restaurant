@@ -1,8 +1,7 @@
 "use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
 import Icon, { type IconProps } from '@/components/ui/app-icon';
+import { useRouter } from 'next/navigation';
 
 const LoginHeader = () => {
   const router = useRouter();

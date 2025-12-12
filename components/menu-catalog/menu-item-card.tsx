@@ -1,26 +1,7 @@
 import React, { useState } from "react";
 import Icon from "../ui/app-icon";
 import { Button } from "../ui/button";
-
-// Define types
-interface MenuItem {
-  id: number;
-  name: string;
-  subtitle: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  imageAlt: string;
-  category: string;
-  dietary: string[];
-  tags: string[];
-  featured: boolean;
-  rating?: number;
-  reviewCount?: number;
-  prepTime: number;
-  createdAt: string;
-}
+import { MenuItem } from "@/types/menu-catalog";
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -39,10 +20,7 @@ const MenuItemCard = ({
     setIsLoading(true);
     try {
       await onAddToCart(item);
-      // Simulate API call delay
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
+      setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }

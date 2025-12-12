@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Navbar from "@/components/navbar/navbar";
 import OrderProgressTimeline from "@/components/order-tracking/order-progress-timeline";
 import OrderSummaryCard from "@/components/order-tracking/order-summary-card";
@@ -58,8 +59,8 @@ interface TrackingLocation {
 interface Delivery {
   type: "delivery" | "pickup";
   address: DeliveryAddress;
-  driver: Driver;
-  trackingLocation: TrackingLocation;
+  driver?: Driver;
+  trackingLocation?: TrackingLocation;
 }
 
 interface Restaurant {
@@ -160,22 +161,9 @@ const OrderTracking = () => {
               state: order.deliveryAddress.state,
               zipCode: order.deliveryAddress.zipCode,
             },
-            // Mock driver data as it's not in the order model yet
-            driver: {
-              name: "Alex Rodriguez",
-              phone: "(555) 123-4567",
-              photo:
-                "https://images.unsplash.com/photo-1659353741091-e0274bb50905",
-              photoAlt: "Delivery driver Alex Rodriguez",
-              vehicleType: "Bike",
-              rating: 4.9,
-            },
-            // Mock tracking location
-            trackingLocation: {
-              lat: 40.7128,
-              lng: -74.006,
-              address: "5th Avenue & 42nd St",
-            },
+            // Driver and tracking location would come from backend if assigned
+            driver: undefined,
+            trackingLocation: undefined,
           },
           restaurant: {
             name: "Foodies Restaurant",
@@ -193,7 +181,7 @@ const OrderTracking = () => {
 
         setOrderData(mappedOrder);
       } catch (error) {
-        console.error("Error fetching order:", error);
+        toast.error("Failed to fetch order details");
         const errorMessage =
           error instanceof Error
             ? error.message
@@ -205,76 +193,14 @@ const OrderTracking = () => {
     };
 
     fetchOrderData();
-    fetchOrderData();
   }, [searchParams]);
 
-  // Simulate order progress
-  useEffect(() => {
-    if (!orderData || orderData.status === "completed") return;
-
-    const statuses = [
-      "order_confirmed",
-      "preparing",
-      "ready_for_pickup",
-      "out_for_delivery",
-      "completed",
-    ];
-
-    const currentStatusIndex = statuses.indexOf(orderData.status);
-    if (currentStatusIndex === -1 || currentStatusIndex === statuses.length - 1)
-      return;
-
-    // Advance to next status after 5 seconds
-    const timer = setTimeout(() => {
-      const nextStatus = statuses[currentStatusIndex + 1];
-
-      setOrderData((prev) => {
-        if (!prev) return null;
-
-        const now = new Date().toISOString();
-        const updatedTimeline = prev.timeline.map((item) => {
-          // Mark current/past steps as completed
-          if (statuses.indexOf(item.status) <= currentStatusIndex) {
-            return { ...item, completed: true, active: false };
-          }
-          // Mark next step as active
-          if (item.status === nextStatus) {
-            return { ...item, active: true, timestamp: now };
-          }
-          return item;
-        });
-
-        // If completed, mark the final step as completed too
-        if (nextStatus === "completed") {
-          const finalTimeline = updatedTimeline.map((item) =>
-            item.status === "completed"
-              ? { ...item, completed: true, active: false, timestamp: now }
-              : item
-          );
-          return {
-            ...prev,
-            status: nextStatus,
-            timeline: finalTimeline,
-            actualDelivery: now,
-          };
-        }
-
-        return {
-          ...prev,
-          status: nextStatus,
-          timeline: updatedTimeline,
-        };
-      });
-    }, 15000);
-
-    return () => clearTimeout(timer);
-  }, [orderData]);
+  // Real-time updates should be handled via Firestore onSnapshot,
+  // currently we just fetch once on load.
 
   const handleContactSupport = () => {
     // In real app, this would open support chat or phone
-    alert(
-      "Opening support chat...\n\nSupport hours: 24/7\nPhone: (555) 123-HELP"
-    );
+    toast.info("Support chat feature coming soon");
   };
 
   const handleCallRestaurant = () => {

@@ -75,12 +75,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         setLoading(true);
         setAvailableSlots([]);
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock availability - some slots might be unavailable
-        const availableToday = timeSlots?.filter(() => Math.random() > 0.3);
-        setAvailableSlots(availableToday);
+        // In a real app, verify availability with backend
+        // For now, we assume all slots are available
+        setAvailableSlots(timeSlots);
         setLoading(false);
       };
 

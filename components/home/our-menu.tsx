@@ -1,99 +1,24 @@
+"use client";
+
 import Image from "next/image";
 import Icon from "../ui/app-icon";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { menuCategories } from "@/lib/constants";
+import { motion } from "motion/react";
 
 const OurMenu = () => {
-  // const navigate = useNavigate();
-
-  const menuCategories = [
-    {
-      id: 1,
-      name: "Burgers",
-      description: "Juicy, handcrafted burgers with premium ingredients",
-      image: "https://images.unsplash.com/photo-1603322617458-a6ca4d3e55c0",
-      imageAlt:
-        "Gourmet beef burger with lettuce, tomato, cheese, and sesame seed bun on wooden cutting board",
-      itemCount: 12,
-      featured: true,
-      color: "bg-primary",
-      textColor: "text-primary-foreground",
-    },
-    {
-      id: 2,
-      name: "Pizza",
-      description: "Wood-fired pizzas with authentic Italian flavors",
-      image: "https://images.unsplash.com/photo-1664683591826-12d7d41543c1",
-      imageAlt:
-        "Traditional Italian pizza with melted mozzarella, fresh basil, and tomato sauce on wooden table",
-      itemCount: 8,
-      featured: false,
-      color: "bg-accent",
-      textColor: "text-accent-foreground",
-    },
-    {
-      id: 3,
-      name: "Pasta",
-      description: "Fresh pasta dishes made with traditional recipes",
-      image: "https://images.unsplash.com/photo-1695300466208-5c58a043dedb",
-      imageAlt:
-        "Creamy pasta dish with herbs and parmesan cheese in white ceramic bowl",
-      itemCount: 10,
-      featured: false,
-      color: "bg-warning",
-      textColor: "text-warning-foreground",
-    },
-    {
-      id: 4,
-      name: "Salads",
-      description: "Fresh, healthy salads with seasonal ingredients",
-      image: "https://images.unsplash.com/photo-1670650850872-652ed66a9097",
-      imageAlt:
-        "Fresh mixed green salad with colorful vegetables, cherry tomatoes, and dressing in glass bowl",
-      itemCount: 6,
-      featured: false,
-      color: "bg-success",
-      textColor: "text-success-foreground",
-    },
-    {
-      id: 5,
-      name: "Desserts",
-      description: "Indulgent desserts to satisfy your sweet tooth",
-      image: "https://images.unsplash.com/photo-1713393280916-a2a888a375c9",
-      imageAlt:
-        "Decadent chocolate cake slice with berries and powdered sugar on elegant white plate",
-      itemCount: 7,
-      featured: false,
-      color: "bg-secondary",
-      textColor: "text-secondary-foreground",
-    },
-    {
-      id: 6,
-      name: "Beverages",
-      description: "Refreshing drinks, coffee, and specialty beverages",
-      image: "https://images.unsplash.com/photo-1657459832576-e42be00462d9",
-      imageAlt:
-        "Assorted colorful beverages including coffee, smoothies, and fresh juices in various glasses",
-      itemCount: 15,
-      featured: false,
-      color: "bg-muted",
-      textColor: "text-muted-foreground",
-    },
-  ];
-
-  // const handleCategoryClick = (category) => {
-  //   navigate("/menu-catalog", { state: { selectedCategory: category?.name } });
-  // };
-
-  // const handleViewFullMenu = () => {
-  //   navigate("/menu-catalog");
-  // };
-
   return (
     <section id="menu-preview" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
           <div className="inline-flex items-center space-x-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
             <Icon name="UtensilsCrossed" size={20} className="text-primary" />
             <span className="text-primary font-body font-medium">OUR MENU</span>
@@ -108,14 +33,17 @@ const OurMenu = () => {
             From hearty burgers to fresh salads, discover a world of flavors
             crafted with passion and the finest ingredients.
           </p>
-        </div>
+        </motion.div>
 
         {/* Menu Categories Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {menuCategories?.map((category) => (
-            <div
+          {menuCategories?.map((category, index) => (
+            <motion.div
               key={category?.id}
-              // onClick={() => handleCategoryClick(category)}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true }}
               className="group relative bg-card rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-xl transition-all duration-300 cursor-pointer"
             >
               {/* Featured Badge */}
@@ -177,7 +105,10 @@ const OurMenu = () => {
                 </p>
 
                 {/* Action */}
-                <Link href="/menu-catalog" className="flex items-center justify-between">
+                <Link
+                  href="/menu-catalog"
+                  className="flex items-center justify-between"
+                >
                   <span className="text-sm text-muted-foreground font-body">
                     View all items
                   </span>
@@ -188,12 +119,18 @@ const OurMenu = () => {
                   />
                 </Link>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* View Full Menu Button */}
-        <div className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
           <Button
             variant="tertiary"
             size="lg"
@@ -203,7 +140,7 @@ const OurMenu = () => {
           >
             View Full Menu
           </Button>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

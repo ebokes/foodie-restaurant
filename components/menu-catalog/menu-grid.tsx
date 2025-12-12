@@ -1,32 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import MenuItemCard from "./menu-item-card";
 import Icon from "../ui/app-icon";
-
-// Define types
-interface MenuItem {
-  id: number;
-  name: string;
-  subtitle: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  imageAlt: string;
-  category: string;
-  dietary: string[];
-  tags: string[];
-  featured: boolean;
-  rating?: number;
-  reviewCount?: number;
-  prepTime: number;
-  createdAt: string;
-}
-
-interface Filters {
-  dietary: string;
-  priceRange: string;
-  sortBy: string;
-}
+import { MenuItem, Filters } from "@/types/menu-catalog";
+import { motion, AnimatePresence, Variants } from "motion/react";
 
 interface MenuGridProps {
   items: MenuItem[];
@@ -120,6 +96,29 @@ const MenuGrid = ({
   const displayedItems = filteredItems?.slice(0, displayCount);
   const hasMore = displayCount < filteredItems?.length;
 
+  // Animation variants
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut",
+      },
+    },
+  };
+
   if (loading) {
     return (
       <div className={`${className}`}>
@@ -129,7 +128,7 @@ const MenuGrid = ({
               key={index}
               className="bg-card rounded-xl overflow-hidden shadow-warm animate-pulse"
             >
-              <div className="aspect-[4/3] bg-muted"></div>
+              <div className="aspect-4/3 bg-muted"></div>
               <div className="p-4 space-y-3">
                 <div className="h-4 bg-muted rounded w-3/4"></div>
                 <div className="h-3 bg-muted rounded w-full"></div>
@@ -199,18 +198,32 @@ const MenuGrid = ({
           </div>
         )}
       </div>
+
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-        {displayedItems?.map((item, index) => (
-          <div
-            key={item?.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <MenuItemCard item={item} onAddToCart={onAddToCart} />
-          </div>
-        ))}
-      </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        // Re-trigger animation when category changes
+        key={activeCategory}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
+      >
+        <AnimatePresence mode="popLayout">
+          {displayedItems?.map((item) => (
+            <motion.div
+              key={item?.id}
+              layout
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <MenuItemCard item={item} onAddToCart={onAddToCart} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
+
       {/* Load More Button */}
       {hasMore && (
         <div className="text-center">
@@ -223,6 +236,7 @@ const MenuGrid = ({
           </button>
         </div>
       )}
+
       {/* Featured Items Indicator */}
       {filteredItems?.some((item) => item?.featured) && (
         <div className="mt-8 p-4 bg-accent/10 border border-accent/20 rounded-lg">

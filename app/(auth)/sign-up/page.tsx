@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Navbar from '@/components/navbar/navbar';
+import RegistrationBenefits from '@/components/sign-up/registration-benefits';
 import RegistrationForm from '@/components/sign-up/registration-form';
 import SocialRegistration from '@/components/sign-up/social-registration';
-import RegistrationBenefits from '@/components/sign-up/registration-benefits';
 import Icon from '@/components/ui/app-icon';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { signUpUser, signInWithGoogle } from '@/lib/store/slices/authSlice';
+import { signInWithGoogle, signUpUser } from '@/lib/store/slices/authSlice';
+import Image from 'next/image';
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const Register = () => {
   const router = useRouter();
@@ -47,8 +48,8 @@ const Register = () => {
       localStorage.removeItem('loginRedirect');
       router.push(redirectTo);
     } catch (error: any) {
-      console.error('Registration error:', error);
-      // Error is handled by Redux, you can access it via state.auth.error
+      toast.error('Registration failed');
+      
     }
   };
 
@@ -63,7 +64,7 @@ const Register = () => {
       localStorage.removeItem('loginRedirect');
       router.push(redirectTo);
     } catch (error: any) {
-      console.error('Social registration error:', error);
+      toast.error(' Google  registration failed');
     }
   };
 

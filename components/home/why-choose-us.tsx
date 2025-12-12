@@ -1,55 +1,21 @@
-import Image from "next/image";
+"use client";
+
+import { features } from "@/lib/constants";
+import { motion } from "motion/react";
 import Icon from "../ui/app-icon";
 
 const WhyChooseUsSection = () => {
-  const features = [
-    {
-      id: 1,
-      icon: "ChefHat" as const,
-      title: "Expert Chefs",
-      description:
-        "Our experienced chefs bring years of culinary expertise to every dish, ensuring exceptional taste and quality.",
-      image: "https://images.unsplash.com/photo-1687089122852-40b29da3f249",
-      imageAlt:
-        "Professional chef in white uniform and hat preparing food in modern kitchen",
-    },
-    {
-      id: 2,
-      icon: "Leaf" as const,
-      title: "Fresh Ingredients",
-      description:
-        "We source only the freshest, locally-grown ingredients to guarantee the best flavors in every bite.",
-      image: "https://images.unsplash.com/photo-1678831654314-8d68bb47cb0f",
-      imageAlt:
-        "Fresh organic vegetables and herbs arranged on wooden cutting board",
-    },
-    {
-      id: 3,
-      icon: "Clock" as const,
-      title: "Fast Service",
-      description:
-        "Quick preparation and delivery without compromising on quality. Your satisfaction is our priority.",
-      image: "https://images.unsplash.com/photo-1689916342657-d8db64f47bdd",
-      imageAlt:
-        "Delivery person on motorcycle with insulated food delivery bag in urban setting",
-    },
-    {
-      id: 4,
-      icon: "Heart" as const,
-      title: "Made with Love",
-      description:
-        "Every dish is prepared with passion and care, bringing you the authentic taste of home-cooked meals.",
-      image: "https://images.unsplash.com/photo-1734918693352-774ff2cd3ae5",
-      imageAlt:
-        "Hands carefully plating a gourmet dish with artistic presentation",
-    },
-  ];
-
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-20 bg-muted/30 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <div className="inline-flex items-center space-x-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
             <Icon name="Award" size={20} className="text-primary" />
             <span className="text-primary font-body font-medium">
@@ -65,14 +31,18 @@ const WhyChooseUsSection = () => {
             We&apos;re committed to delivering exceptional dining experiences
             through quality, service, and passion for great food.
           </p>
-        </div>
+        </motion.div>
 
         {/* Features Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features?.map((feature) => (
-            <div
+          {features?.map((feature, index) => (
+            <motion.div
               key={feature?.id}
-              className="group bg-card rounded-2xl p-6 shadow-warm  transition-all duration-300 text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="group bg-card rounded-2xl p-6 shadow-warm transition-all duration-300 text-center hover:-translate-y-2 hover:shadow-warm-lg"
             >
               {/* Icon */}
               <div className="relative mb-6">
@@ -83,9 +53,6 @@ const WhyChooseUsSection = () => {
                     className="text-primary group-hover:text-primary-foreground transition-colors duration-300"
                   />
                 </div>
-
-                {/* Background decoration */}
-                {/* <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl scale-75 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
               </div>
 
               {/* Content */}
@@ -96,18 +63,7 @@ const WhyChooseUsSection = () => {
               <p className="text-muted-foreground font-body leading-relaxed">
                 {feature?.description}
               </p>
-
-              {/* Hidden image that appears on hover */}
-              <div className="mt-4 overflow-hidden rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Image
-                  src={feature?.image}
-                  alt={feature?.imageAlt}
-                  width={100}
-                  height={100}
-                  className="w-full h-32 object-cover transform scale-110 group-hover:scale-100 transition-transform duration-500"
-                />
-              </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -119,19 +75,25 @@ const WhyChooseUsSection = () => {
             { number: "5★", label: "Average Rating" },
             { number: "24/7", label: "Service Available" },
           ]?.map((stat, index) => (
-            <div key={index} className="text-center">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="text-center"
+            >
               <div className="text-3xl sm:text-4xl font-heading font-bold text-primary mb-2">
                 {stat?.number}
               </div>
               <div className="text-muted-foreground font-body">
                 {stat?.label}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
 };
-
 export default WhyChooseUsSection;

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import Input from '@/components/ui/input';
+import React, { useState } from "react";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import Input from "@/components/ui/input";
 
 interface User {
   id?: string;
@@ -31,57 +31,66 @@ interface ShowPassword {
   confirm: boolean;
 }
 
-const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, onUpdateUser }) => {
+const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({
+  user,
+  onUpdateUser,
+}) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState<PasswordForm>({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [showPassword, setShowPassword] = useState<ShowPassword>({
     current: false,
     new: false,
-    confirm: false
+    confirm: false,
   });
 
-  const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setPasswordForm(prev => ({ ...prev, [name]: value }));
-    
+    setPasswordForm((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (passwordErrors[name as keyof PasswordErrors]) {
-      setPasswordErrors(prev => ({ ...prev, [name]: '' }));
+      setPasswordErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const togglePasswordVisibility = (field: keyof ShowPassword) => {
-    setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const validatePasswordForm = (): boolean => {
     const newErrors: PasswordErrors = {};
-    
+
     if (!passwordForm.currentPassword) {
-      newErrors.currentPassword = 'Current password is required';
+      newErrors.currentPassword = "Current password is required";
     }
-    
+
     if (!passwordForm.newPassword) {
-      newErrors.newPassword = 'New password is required';
+      newErrors.newPassword = "New password is required";
     } else if (passwordForm.newPassword.length < 8) {
-      newErrors.newPassword = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordForm.newPassword)) {
-      newErrors.newPassword = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+      newErrors.newPassword = "Password must be at least 8 characters";
+    } else if (
+      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordForm.newPassword)
+    ) {
+      newErrors.newPassword =
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number";
     }
-    
+
     if (!passwordForm.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your new password';
+      newErrors.confirmPassword = "Please confirm your new password";
     } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
-    
+
     if (passwordForm.currentPassword === passwordForm.newPassword) {
-      newErrors.newPassword = 'New password must be different from current password';
+      newErrors.newPassword =
+        "New password must be different from current password";
     }
 
     setPasswordErrors(newErrors);
@@ -90,54 +99,80 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
 
   const handlePasswordChange = async () => {
     if (validatePasswordForm()) {
+      setIsChangingPassword(true);
       try {
-        // Simulate API call for password change
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // In a real app, you would make an API call here
-        console.log('Password changed successfully');
-        
+        const {
+          updatePassword,
+          EmailAuthProvider,
+          reauthenticateWithCredential,
+        } = await import("firebase/auth");
+        const { auth } = await import("@/lib/firebase/config");
+
+        const user = auth.currentUser;
+        if (!user || !user.email) throw new Error("User not authenticated");
+
+        // 1. Re-authenticate user
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          passwordForm.currentPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+
+        // 2. Update password
+        await updatePassword(user, passwordForm.newPassword);
+
         // Reset form
         setPasswordForm({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
         });
         setIsChangingPassword(false);
-        
+
         // Show success message
-        alert('Password changed successfully!');
-      } catch (error) {
-        console.error('Error changing password:', error);
-        alert('Error changing password. Please try again.');
+        const { toast } = await import("sonner");
+        toast.success("Password changed successfully!");
+      } catch (error: any) {
+        console.error("Error changing password:", error);
+        const { toast } = await import("sonner");
+        if (error.code === "auth/wrong-password") {
+          toast.error("Incorrect current password.");
+        } else {
+          toast.error("Error changing password. Please try again.");
+        }
+      } finally {
+        setIsChangingPassword(false);
       }
     }
   };
 
   const cancelPasswordChange = () => {
     setPasswordForm({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     });
     setPasswordErrors({});
     setIsChangingPassword(false);
   };
 
   const getPasswordStrength = (password: string) => {
-    if (!password) return { strength: 0, label: '', color: '' };
-    
+    if (!password) return { strength: 0, label: "", color: "" };
+
     let score = 0;
     if (password.length >= 8) score++;
     if (/[a-z]/.test(password)) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/\d/.test(password)) score++;
     if (/[^a-zA-Z0-9]/.test(password)) score++;
-    
-    if (score <= 2) return { strength: score, label: 'Weak', color: 'text-error' };
-    if (score <= 3) return { strength: score, label: 'Fair', color: 'text-warning' };
-    if (score <= 4) return { strength: score, label: 'Good', color: 'text-success' };
-    return { strength: score, label: 'Strong', color: 'text-success' };
+
+    if (score <= 2)
+      return { strength: score, label: "Weak", color: "text-error" };
+    if (score <= 3)
+      return { strength: score, label: "Fair", color: "text-warning" };
+    if (score <= 4)
+      return { strength: score, label: "Good", color: "text-success" };
+    return { strength: score, label: "Strong", color: "text-success" };
   };
 
   const passwordStrength = getPasswordStrength(passwordForm.newPassword);
@@ -149,33 +184,43 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
           <Icon name="Shield" size={20} color="white" />
         </div>
         <div>
-          <h2 className="text-xl font-heading font-bold text-foreground">Account Security</h2>
-          <p className="text-sm font-body text-muted-foreground">Manage your account security settings</p>
+          <h2 className="text-xl font-heading font-bold text-foreground">
+            Account Security
+          </h2>
+          <p className="text-sm font-body text-muted-foreground">
+            Manage your account security settings
+          </p>
         </div>
       </div>
       <div className="space-y-6">
         {/* Account Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
-            <label className="text-sm font-body font-medium text-muted-foreground">Account ID</label>
+            <label className="text-sm font-body font-medium text-muted-foreground">
+              Account ID
+            </label>
             <p className="text-base font-body font-mono text-foreground bg-muted px-3 py-2 rounded-lg">
-              {user.id || 'N/A'}
+              {user.id || "N/A"}
             </p>
           </div>
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-body font-medium text-muted-foreground">Last Login</label>
+            <label className="text-sm font-body font-medium text-muted-foreground">
+              Last Login
+            </label>
             <div className="flex items-center space-x-2">
               <Icon name="Clock" size={16} className="text-success" />
               <p className="text-base font-body text-foreground">
-                {user.lastLogin ? new Date(user.lastLogin).toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true
-                }) : 'Never logged in'}
+                {user.lastLogin
+                  ? new Date(user.lastLogin).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  : "Never logged in"}
               </p>
             </div>
           </div>
@@ -185,10 +230,14 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-heading font-semibold text-foreground">Password</h3>
-              <p className="text-sm font-body text-muted-foreground">Change your account password</p>
+              <h3 className="text-lg font-heading font-semibold text-foreground">
+                Password
+              </h3>
+              <p className="text-sm font-body text-muted-foreground">
+                Change your account password
+              </p>
             </div>
-            
+
             {!isChangingPassword && (
               <Button
                 variant="outline"
@@ -202,8 +251,10 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
 
           {isChangingPassword ? (
             <div className="bg-muted rounded-lg p-6 space-y-4">
-              <h4 className="text-base font-heading font-semibold text-foreground mb-4">Change Password</h4>
-              
+              <h4 className="text-base font-heading font-semibold text-foreground mb-4">
+                Change Password
+              </h4>
+
               <div className="relative">
                 <Input
                   label="Current Password"
@@ -217,13 +268,16 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
                 />
                 <button
                   type="button"
-                  onClick={() => togglePasswordVisibility('current')}
+                  onClick={() => togglePasswordVisibility("current")}
                   className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
                 >
-                  <Icon name={showPassword.current ? "EyeOff" : "Eye"} size={16} />
+                  <Icon
+                    name={showPassword.current ? "EyeOff" : "Eye"}
+                    size={16}
+                  />
                 </button>
               </div>
-              
+
               <div className="relative">
                 <Input
                   label="New Password"
@@ -237,33 +291,40 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
                 />
                 <button
                   type="button"
-                  onClick={() => togglePasswordVisibility('new')}
+                  onClick={() => togglePasswordVisibility("new")}
                   className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
                 >
                   <Icon name={showPassword.new ? "EyeOff" : "Eye"} size={16} />
                 </button>
-                
+
                 {/* Password Strength Indicator */}
                 {passwordForm.newPassword && (
                   <div className="mt-2">
                     <div className="flex items-center space-x-2">
                       <div className="flex-1 bg-border rounded-full h-2">
-                        <div 
+                        <div
                           className={`h-2 rounded-full transition-all duration-300 ${
-                            passwordStrength.strength <= 2 ? 'bg-error' :
-                            passwordStrength.strength <= 3 ? 'bg-warning' : 'bg-success'
+                            passwordStrength.strength <= 2
+                              ? "bg-error"
+                              : passwordStrength.strength <= 3
+                              ? "bg-warning"
+                              : "bg-success"
                           }`}
-                          style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                          style={{
+                            width: `${(passwordStrength.strength / 5) * 100}%`,
+                          }}
                         />
                       </div>
-                      <span className={`text-xs font-body ${passwordStrength.color}`}>
+                      <span
+                        className={`text-xs font-body ${passwordStrength.color}`}
+                      >
                         {passwordStrength.label}
                       </span>
                     </div>
                   </div>
                 )}
               </div>
-              
+
               <div className="relative">
                 <Input
                   label="Confirm New Password"
@@ -277,57 +338,81 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
                 />
                 <button
                   type="button"
-                  onClick={() => togglePasswordVisibility('confirm')}
+                  onClick={() => togglePasswordVisibility("confirm")}
                   className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
                 >
-                  <Icon name={showPassword.confirm ? "EyeOff" : "Eye"} size={16} />
+                  <Icon
+                    name={showPassword.confirm ? "EyeOff" : "Eye"}
+                    size={16}
+                  />
                 </button>
               </div>
 
               {/* Password Requirements */}
               <div className="bg-background rounded-lg p-4">
-                <p className="text-xs font-body font-medium text-foreground mb-2">Password Requirements:</p>
+                <p className="text-xs font-body font-medium text-foreground mb-2">
+                  Password Requirements:
+                </p>
                 <ul className="text-xs font-body text-muted-foreground space-y-1">
                   <li className="flex items-center space-x-2">
-                    <Icon 
-                      name={passwordForm.newPassword.length >= 8 ? "Check" : "X"} 
-                      size={12} 
-                      className={passwordForm.newPassword.length >= 8 ? "text-success" : "text-error"} 
+                    <Icon
+                      name={
+                        passwordForm.newPassword.length >= 8 ? "Check" : "X"
+                      }
+                      size={12}
+                      className={
+                        passwordForm.newPassword.length >= 8
+                          ? "text-success"
+                          : "text-error"
+                      }
                     />
                     <span>At least 8 characters</span>
                   </li>
                   <li className="flex items-center space-x-2">
-                    <Icon 
-                      name={/[a-z]/.test(passwordForm.newPassword) ? "Check" : "X"} 
-                      size={12} 
-                      className={/[a-z]/.test(passwordForm.newPassword) ? "text-success" : "text-error"} 
+                    <Icon
+                      name={
+                        /[a-z]/.test(passwordForm.newPassword) ? "Check" : "X"
+                      }
+                      size={12}
+                      className={
+                        /[a-z]/.test(passwordForm.newPassword)
+                          ? "text-success"
+                          : "text-error"
+                      }
                     />
                     <span>One lowercase letter</span>
                   </li>
                   <li className="flex items-center space-x-2">
-                    <Icon 
-                      name={/[A-Z]/.test(passwordForm.newPassword) ? "Check" : "X"} 
-                      size={12} 
-                      className={/[A-Z]/.test(passwordForm.newPassword) ? "text-success" : "text-error"} 
+                    <Icon
+                      name={
+                        /[A-Z]/.test(passwordForm.newPassword) ? "Check" : "X"
+                      }
+                      size={12}
+                      className={
+                        /[A-Z]/.test(passwordForm.newPassword)
+                          ? "text-success"
+                          : "text-error"
+                      }
                     />
                     <span>One uppercase letter</span>
                   </li>
                   <li className="flex items-center space-x-2">
-                    <Icon 
-                      name={/\d/.test(passwordForm.newPassword) ? "Check" : "X"} 
-                      size={12} 
-                      className={/\d/.test(passwordForm.newPassword) ? "text-success" : "text-error"} 
+                    <Icon
+                      name={/\d/.test(passwordForm.newPassword) ? "Check" : "X"}
+                      size={12}
+                      className={
+                        /\d/.test(passwordForm.newPassword)
+                          ? "text-success"
+                          : "text-error"
+                      }
                     />
                     <span>One number</span>
                   </li>
                 </ul>
               </div>
-              
+
               <div className="flex items-center space-x-3 pt-4">
-                <Button
-                  onClick={handlePasswordChange}
-                  iconName="Key"
-                >
+                <Button onClick={handlePasswordChange} iconName="Key">
                   Change Password
                 </Button>
                 <Button
@@ -346,7 +431,9 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
                   <Icon name="Check" size={16} color="white" />
                 </div>
                 <div>
-                  <p className="text-sm font-body font-medium text-foreground">Password is secure</p>
+                  <p className="text-sm font-body font-medium text-foreground">
+                    Password is secure
+                  </p>
                   <p className="text-xs font-body text-muted-foreground">
                     Last changed: Never (using default password)
                   </p>
@@ -363,7 +450,9 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({ user, o
               <Icon name="Info" size={14} color="white" />
             </div>
             <div>
-              <h4 className="text-sm font-body font-medium text-foreground mb-2">Security Tips</h4>
+              <h4 className="text-sm font-body font-medium text-foreground mb-2">
+                Security Tips
+              </h4>
               <ul className="text-xs font-body text-muted-foreground space-y-1">
                 <li>• Use a unique password for your account</li>
                 <li>• Don't share your login credentials with others</li>

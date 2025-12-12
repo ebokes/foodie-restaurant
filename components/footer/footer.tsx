@@ -45,9 +45,7 @@ const FooterSection = () => {
   ];
 
   const handleNavigation = (path: string) => {
-    // In a Next.js app, you would use useRouter from 'next/router' instead
     console.log("Navigate to:", path);
-    // For now, we'll just log the path since we don't have routing implemented
   };
 
   return (
@@ -101,7 +99,7 @@ const FooterSection = () => {
             viewport={{ once: true }}
             className="lg:col-span-1"
           >
-            <Link href={'/'} className="flex items-center space-x-2 mb-6">
+            <Link href={"/"} className="flex items-center space-x-2 mb-6">
               <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center">
                 <Icon
                   name="Salad"

@@ -1,23 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
-import Icon, { type IconProps } from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import Input from '@/components/ui/input';
-
-interface Address {
-  id: string;
-  label: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  isDefault: boolean;
-}
+import React, { useState } from "react";
+import Icon, { type IconProps } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import Input from "@/components/ui/input";
+import { Address } from "@/types/user";
 
 interface AddressSectionProps {
   addresses: Address[];
-  onAddAddress: (address: Omit<Address, 'id'>) => void;
+  onAddAddress: (address: Omit<Address, "id">) => void;
   onUpdateAddress: (addressId: string, updatedData: Partial<Address>) => void;
   onDeleteAddress: (addressId: string) => void;
 }
@@ -39,53 +30,58 @@ interface Errors {
   zipCode?: string;
 }
 
-const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress, onUpdateAddress, onDeleteAddress }) => {
+const AddressSection: React.FC<AddressSectionProps> = ({
+  addresses,
+  onAddAddress,
+  onUpdateAddress,
+  onDeleteAddress,
+}) => {
   const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    label: '',
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    isDefault: false
+    label: "",
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    isDefault: false,
   });
   const [errors, setErrors] = useState<Errors>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Clear error when user starts typing
     if (errors[name as keyof Errors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
-    
+
     if (!formData.label.trim()) {
-      newErrors.label = 'Address label is required';
+      newErrors.label = "Address label is required";
     }
     if (!formData.street.trim()) {
-      newErrors.street = 'Street address is required';
+      newErrors.street = "Street address is required";
     }
     if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
+      newErrors.city = "City is required";
     }
     if (!formData.state.trim()) {
-      newErrors.state = 'State is required';
+      newErrors.state = "State is required";
     }
     if (!formData.zipCode.trim()) {
-      newErrors.zipCode = 'ZIP code is required';
+      newErrors.zipCode = "ZIP code is required";
     } else if (!/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
-      newErrors.zipCode = 'Please enter a valid ZIP code';
+      newErrors.zipCode = "Please enter a valid ZIP code";
     }
 
     setErrors(newErrors);
@@ -112,7 +108,7 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
       city: address.city,
       state: address.state,
       zipCode: address.zipCode,
-      isDefault: address.isDefault
+      isDefault: address.isDefault,
     });
     setEditingId(address.id);
     setIsAddingNew(false);
@@ -126,12 +122,12 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
 
   const resetForm = (): void => {
     setFormData({
-      label: '',
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      isDefault: false
+      label: "",
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      isDefault: false,
     });
     setErrors({});
   };
@@ -150,16 +146,16 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
             <Icon name="MapPin" size={24} color="white" />
           </div>
           <div>
-            <h2 className="text-xl font-heading font-bold text-foreground">Delivery Addresses</h2>
-            <p className="text-sm font-body text-muted-foreground">Manage your saved addresses</p>
+            <h2 className="text-xl font-heading font-bold text-foreground">
+              Delivery Addresses
+            </h2>
+            <p className="text-sm font-body text-muted-foreground">
+              Manage your saved addresses
+            </p>
           </div>
         </div>
         {!isAddingNew && !editingId && (
-          <Button
-            variant="outline"
-            iconName="Plus"
-            onClick={handleAddNew}
-          >
+          <Button variant="outline" iconName="Plus" onClick={handleAddNew}>
             Add Address
           </Button>
         )}
@@ -167,7 +163,14 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
       <div className="space-y-4">
         {/* Existing Addresses */}
         {addresses.map((address) => (
-          <div key={address.id} className={`border border-border rounded-lg p-4 ${address.isDefault ? 'bg-primary/5 border-primary/20' : 'bg-background'}`}>
+          <div
+            key={address.id}
+            className={`border border-border rounded-lg p-4 ${
+              address.isDefault
+                ? "bg-primary/5 border-primary/20"
+                : "bg-background"
+            }`}
+          >
             {editingId === address.id ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,12 +193,15 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                       onChange={handleInputChange}
                       className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
                     />
-                    <label htmlFor={`default-${address.id}`} className="text-sm font-body text-foreground">
+                    <label
+                      htmlFor={`default-${address.id}`}
+                      className="text-sm font-body text-foreground"
+                    >
                       Set as default address
                     </label>
                   </div>
                 </div>
-                
+
                 <Input
                   label="Street Address"
                   type="text"
@@ -206,7 +212,7 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                   placeholder="123 Main Street"
                   required
                 />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
                     label="City"
@@ -248,11 +254,7 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                   >
                     Save Changes
                   </Button>
-                  <Button
-                    variant="outline"
-                    iconName="X"
-                    onClick={handleCancel}
-                  >
+                  <Button variant="outline" iconName="X" onClick={handleCancel}>
                     Cancel
                   </Button>
                 </div>
@@ -261,7 +263,9 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <h3 className="text-base font-body font-medium text-foreground">{address.label}</h3>
+                    <h3 className="text-base font-body font-medium text-foreground">
+                      {address.label}
+                    </h3>
                     {address.isDefault && (
                       <span className="px-2 py-1 bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground text-xs font-body font-medium rounded-full">
                         Default
@@ -269,7 +273,8 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                     )}
                   </div>
                   <p className="text-sm font-body text-muted-foreground">
-                    {address.street}<br />
+                    {address.street}
+                    <br />
                     {address.city}, {address.state} {address.zipCode}
                   </p>
                 </div>
@@ -295,7 +300,9 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
         {/* Add New Address Form */}
         {isAddingNew && (
           <div className="border border-border rounded-lg p-4 bg-background">
-            <h3 className="text-lg font-body font-medium text-foreground mb-4">Add New Address</h3>
+            <h3 className="text-lg font-body font-medium text-foreground mb-4">
+              Add New Address
+            </h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -317,12 +324,15 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                     onChange={handleInputChange}
                     className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
                   />
-                  <label htmlFor="default-new" className="text-sm font-body text-foreground">
+                  <label
+                    htmlFor="default-new"
+                    className="text-sm font-body text-foreground"
+                  >
                     Set as default address
                   </label>
                 </div>
               </div>
-              
+
               <Input
                 label="Street Address"
                 type="text"
@@ -333,7 +343,7 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
                 placeholder="123 Main Street"
                 required
               />
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   label="City"
@@ -368,18 +378,10 @@ const AddressSection: React.FC<AddressSectionProps> = ({ addresses, onAddAddress
               </div>
 
               <div className="flex items-center space-x-3">
-                <Button
-                  variant="default"
-                  iconName="Plus"
-                  onClick={handleSave}
-                >
+                <Button variant="default" iconName="Plus" onClick={handleSave}>
                   Add Address
                 </Button>
-                <Button
-                  variant="outline"
-                  iconName="X"
-                  onClick={handleCancel}
-                >
+                <Button variant="outline" iconName="X" onClick={handleCancel}>
                   Cancel
                 </Button>
               </div>

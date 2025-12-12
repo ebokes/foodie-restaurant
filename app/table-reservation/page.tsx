@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import ConfirmationModal from "@/components/table-reservation/confirmation-modal";
 import DateTimePicker from "@/components/table-reservation/date-time-picker";
 import ReservationForm from "@/components/table-reservation/reservation-form";
@@ -11,6 +12,7 @@ import Navbar from "@/components/navbar/navbar";
 import FooterSection from "@/components/footer/footer";
 import { reservationService } from "@/lib/firebase/reservations";
 import { useAppSelector } from "@/lib/store/hooks";
+import { motion } from "motion/react";
 
 interface Restaurant {
   id: string;
@@ -172,9 +174,8 @@ const TableReservation = () => {
       setLoading(false);
       setShowConfirmation(true);
     } catch (error) {
-      console.error("Failed to create reservation:", error);
+      toast.error("Failed to create reservation");
       setLoading(false);
-      // You might want to show an error toast here
     }
   };
 
@@ -269,7 +270,13 @@ const TableReservation = () => {
       <main className="">
         {/* Hero Section */}
         <section className="bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground py-12 lg:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
             <div className="text-center">
               <h1 className="text-3xl lg:text-5xl font-heading font-bold mb-4">
                 Reserve Your Table
@@ -280,12 +287,18 @@ const TableReservation = () => {
                 an unforgettable meal.
               </p>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Reservation Content */}
         <section className="py-8 lg:py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
             {/* Step Indicator */}
             {renderStepIndicator()}
 
@@ -293,12 +306,18 @@ const TableReservation = () => {
             <div className="bg-card rounded-2xl p-6 lg:p-8 shadow-warm">
               {renderStepContent()}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Call to Action Section */}
         <section className="bg-muted py-12 lg:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+          >
             <div className="bg-card rounded-2xl p-8 lg:p-12 shadow-warm">
               <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icon name="Calendar" size={24} color="#4C1D0A" />
@@ -328,7 +347,7 @@ const TableReservation = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 

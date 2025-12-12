@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import Icon from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Icon from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface Driver {
   name: string;
@@ -34,36 +36,25 @@ interface DeliveryTrackingProps {
   onCallDriver?: (() => void) | null;
 }
 
-const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({ 
-  driver = null, 
-  trackingLocation = null, 
+const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
+  driver = null,
+  trackingLocation = null,
   deliveryAddress = null,
-  onCallDriver = null 
+  onCallDriver = null,
 }) => {
-  const [mapUrl, setMapUrl] = useState('');
-  const [estimatedDistance, setEstimatedDistance] = useState('0.8 miles');
-  const [estimatedTime, setEstimatedTime] = useState('8 minutes');
+  const [mapUrl, setMapUrl] = useState("");
+  const [estimatedDistance, setEstimatedDistance] = useState("0.8 miles");
+  const [estimatedTime, setEstimatedTime] = useState("8 minutes");
 
   useEffect(() => {
-    // Generate a mock map URL (in real app, would use Google Maps API)
     if (trackingLocation) {
       const { lat, lng } = trackingLocation;
-      // Using a static map service for demo (replace with actual mapping service)
+      // In a real application, this would generate a map URL based on lat/lng
+      // or integrate with a map service API.
       const mockMapUrl = `https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=300&fit=crop&crop=center`;
       setMapUrl(mockMapUrl);
     }
-
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      // Randomly update estimated time (simulate movement)
-      const times = ['5 minutes', '6 minutes', '7 minutes', '8 minutes', '9 minutes'];
-      const distances = ['0.6 miles', '0.7 miles', '0.8 miles', '0.9 miles'];
-      
-      setEstimatedTime(times[Math.floor(Math.random() * times.length)]);
-      setEstimatedDistance(distances[Math.floor(Math.random() * distances.length)]);
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
+    // Real-time tracking would use WebSocket or Firebase onSnapshot
   }, [trackingLocation]);
 
   if (!driver || !trackingLocation) {
@@ -86,7 +77,7 @@ const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="font-caption text-xs text-green-600 font-medium">
@@ -134,12 +125,16 @@ const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Icon name="Map" size={48} className="text-muted-foreground mb-2 mx-auto" />
+              <Icon
+                name="Map"
+                size={48}
+                className="text-muted-foreground mb-2 mx-auto"
+              />
               <p className="font-body text-muted-foreground">Loading map...</p>
             </div>
           </div>
         )}
-        
+
         {/* Map Overlay */}
         <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent">
           {/* Current Location Marker */}
@@ -152,7 +147,7 @@ const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
               <div className="absolute inset-0 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-full animate-ping opacity-75"></div>
             </div>
           </div>
-          
+
           {/* Location Info */}
           <div className="absolute bottom-4 left-4 right-4">
             <div className="bg-white/90 dark:bg-black/90 backdrop-blur-sm rounded-lg p-3">
@@ -160,7 +155,7 @@ const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
                 Current Location:
               </p>
               <p className="font-caption text-xs text-muted-foreground">
-                {trackingLocation.address || '5th Avenue & 42nd St'}
+                {trackingLocation.address || "5th Avenue & 42nd St"}
               </p>
             </div>
           </div>
@@ -222,17 +217,20 @@ const DeliveryTracking: React.FC<DeliveryTrackingProps> = ({
                 </p>
                 <p className="font-caption text-sm text-muted-foreground">
                   {deliveryAddress.street}
-                  {deliveryAddress.apartment && `, ${deliveryAddress.apartment}`}
+                  {deliveryAddress.apartment &&
+                    `, ${deliveryAddress.apartment}`}
                 </p>
                 <p className="font-caption text-sm text-muted-foreground">
-                  {deliveryAddress.city}, {deliveryAddress.state} {deliveryAddress.zipCode}
+                  {deliveryAddress.city}, {deliveryAddress.state}{" "}
+                  {deliveryAddress.zipCode}
                 </p>
-                
+
                 {/* Special Instructions */}
                 {deliveryAddress.instructions && (
                   <div className="mt-2 p-2 bg-muted rounded-md">
                     <p className="font-caption text-xs text-muted-foreground">
-                      <strong>Instructions:</strong> {deliveryAddress.instructions}
+                      <strong>Instructions:</strong>{" "}
+                      {deliveryAddress.instructions}
                     </p>
                   </div>
                 )}

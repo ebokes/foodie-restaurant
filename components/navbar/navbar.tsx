@@ -146,7 +146,7 @@ const Navbar: React.FC<NavbarProps> = ({
   // Close dropdowns when clicking outside
   useEffect(() => {
     if (!isMobileMenuOpen && !isUserDropdownOpen) {
-      return; // Don't set up listeners if nothing is open
+      return;
     }
 
     const handleClickOutside = (event: MouseEvent) => {
