@@ -7,12 +7,16 @@ interface MenuItemCardProps {
   item: MenuItem;
   onAddToCart: (item: MenuItem) => void;
   className?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (item: MenuItem) => void;
 }
 
 const MenuItemCard = ({
   item,
   onAddToCart,
   className = "",
+  isFavorite = false,
+  onToggleFavorite,
 }: MenuItemCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -107,7 +111,7 @@ const MenuItemCard = ({
             <span className="text-xl font-heading font-bold text-primary">
               {formatPrice(item?.price)}
             </span>
-            {item?.originalPrice && item?.originalPrice > item?.price && (
+            {!!item?.originalPrice && item.originalPrice > item.price && (
               <span className="text-sm text-muted-foreground line-through">
                 {formatPrice(item?.originalPrice)}
               </span>
@@ -121,7 +125,7 @@ const MenuItemCard = ({
         </p>
 
         {/* Rating & Reviews */}
-        {item?.rating && (
+        {!!item?.rating && (
           <div className="flex items-center space-x-2 mb-4">
             <div className="flex items-center space-x-1">
               {[...Array(5)].map((_, i) => (
@@ -180,13 +184,26 @@ const MenuItemCard = ({
           <Button
             variant="ghost"
             size="sm"
-            iconName="Heart"
-            className="shrink-0 rounded-md"
-          />
+            className={`shrink-0 rounded-md transition-colors duration-200 ${
+              isFavorite
+                ? "text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100"
+                : "text-muted-foreground hover:text-red-500"
+            }`}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click if needed
+              onToggleFavorite?.(item);
+            }}
+          >
+            <Icon
+              name="Heart"
+              size={18}
+              className={isFavorite ? "fill-current" : ""}
+            />
+          </Button>
         </div>
 
         {/* Preparation Time */}
-        {item?.prepTime && (
+        {!!item?.prepTime && (
           <div className="flex items-center space-x-1 mt-3 pt-3 border-t border-border">
             <Icon
               name="Clock"

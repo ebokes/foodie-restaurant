@@ -1,18 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import Icon, { type IconProps } from '@/components/ui/app-icon';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import Image from 'next/image';
-
-interface FavoriteItem {
-  id: string;
-  name: string;
-  category: string;
-  image: string;
-  imageAlt: string;
-}
+import React, { useState } from "react";
+import Icon, { type IconProps } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Preferences {
   dietary: string[];
@@ -24,7 +15,6 @@ interface Preferences {
     emailNewsletter: boolean;
     smsNotifications: boolean;
   };
-  favoriteItems: FavoriteItem[];
 }
 
 interface PreferencesSectionProps {
@@ -32,62 +22,105 @@ interface PreferencesSectionProps {
   onUpdatePreferences: (preferences: Preferences) => void;
 }
 
-const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, onUpdatePreferences }) => {
-  const [localPreferences, setLocalPreferences] = useState<Preferences>(preferences);
+const PreferencesSection: React.FC<PreferencesSectionProps> = ({
+  preferences,
+  onUpdatePreferences,
+}) => {
+  const [localPreferences, setLocalPreferences] =
+    useState<Preferences>(preferences);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   const dietaryOptions = [
-    { id: 'vegetarian', label: 'Vegetarian', description: 'No meat or fish' },
-    { id: 'vegan', label: 'Vegan', description: 'No animal products' },
-    { id: 'glutenFree', label: 'Gluten-Free', description: 'No gluten-containing ingredients' },
-    { id: 'dairyFree', label: 'Dairy-Free', description: 'No dairy products' },
-    { id: 'nutFree', label: 'Nut-Free', description: 'No nuts or nut products' },
-    { id: 'lowSodium', label: 'Low Sodium', description: 'Reduced salt content' }
+    { id: "vegetarian", label: "Vegetarian", description: "No meat or fish" },
+    { id: "vegan", label: "Vegan", description: "No animal products" },
+    {
+      id: "glutenFree",
+      label: "Gluten-Free",
+      description: "No gluten-containing ingredients",
+    },
+    { id: "dairyFree", label: "Dairy-Free", description: "No dairy products" },
+    {
+      id: "nutFree",
+      label: "Nut-Free",
+      description: "No nuts or nut products",
+    },
+    {
+      id: "lowSodium",
+      label: "Low Sodium",
+      description: "Reduced salt content",
+    },
   ];
 
   const notificationOptions = [
-    { id: 'orderUpdates', label: 'Order Updates', description: 'Get notified about order status changes' },
-    { id: 'promotions', label: 'Promotions & Deals', description: 'Receive special offers and discounts' },
-    { id: 'newMenuItems', label: 'New Menu Items', description: 'Be the first to know about new dishes' },
-    { id: 'emailNewsletter', label: 'Email Newsletter', description: 'Weekly newsletter with recipes and tips' },
-    { id: 'smsNotifications', label: 'SMS Notifications', description: 'Text messages for urgent updates' }
+    {
+      id: "orderUpdates",
+      label: "Order Updates",
+      description: "Get notified about order status changes",
+    },
+    {
+      id: "promotions",
+      label: "Promotions & Deals",
+      description: "Receive special offers and discounts",
+    },
+    {
+      id: "newMenuItems",
+      label: "New Menu Items",
+      description: "Be the first to know about new dishes",
+    },
+    {
+      id: "emailNewsletter",
+      label: "Email Newsletter",
+      description: "Weekly newsletter with recipes and tips",
+    },
+    {
+      id: "smsNotifications",
+      label: "SMS Notifications",
+      description: "Text messages for urgent updates",
+    },
   ];
 
   const spiceLevels = [
-    { value: 'none', label: 'No Spice', description: 'Mild and gentle flavors' },
-    { value: 'mild', label: 'Mild', description: 'Slightly spicy' },
-    { value: 'medium', label: 'Medium', description: 'Moderately spicy' },
-    { value: 'hot', label: 'Hot', description: 'Very spicy' },
-    { value: 'extra-hot', label: 'Extra Hot', description: 'Extremely spicy' }
+    {
+      value: "none",
+      label: "No Spice",
+      description: "Mild and gentle flavors",
+    },
+    { value: "mild", label: "Mild", description: "Slightly spicy" },
+    { value: "medium", label: "Medium", description: "Moderately spicy" },
+    { value: "hot", label: "Hot", description: "Very spicy" },
+    { value: "extra-hot", label: "Extra Hot", description: "Extremely spicy" },
   ];
 
   const handleDietaryChange = (optionId: string, checked: boolean): void => {
-    const updatedDietary = checked 
+    const updatedDietary = checked
       ? [...localPreferences.dietary, optionId]
-      : localPreferences.dietary.filter(id => id !== optionId);
-    
-    setLocalPreferences(prev => ({
+      : localPreferences.dietary.filter((id) => id !== optionId);
+
+    setLocalPreferences((prev) => ({
       ...prev,
-      dietary: updatedDietary
+      dietary: updatedDietary,
     }));
     setHasChanges(true);
   };
 
-  const handleNotificationChange = (optionId: string, checked: boolean): void => {
-    setLocalPreferences(prev => ({
+  const handleNotificationChange = (
+    optionId: string,
+    checked: boolean
+  ): void => {
+    setLocalPreferences((prev) => ({
       ...prev,
       notifications: {
         ...prev.notifications,
-        [optionId]: checked
-      }
+        [optionId]: checked,
+      },
     }));
     setHasChanges(true);
   };
 
   const handleSpiceLevelChange = (level: string): void => {
-    setLocalPreferences(prev => ({
+    setLocalPreferences((prev) => ({
       ...prev,
-      spiceLevel: level
+      spiceLevel: level,
     }));
     setHasChanges(true);
   };
@@ -110,8 +143,12 @@ const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, on
             <Icon name="Settings" size={24} color="white" />
           </div>
           <div>
-            <h2 className="text-xl font-heading font-bold text-foreground">Preferences</h2>
-            <p className="text-sm font-body text-muted-foreground">Customize your dining experience</p>
+            <h2 className="text-xl font-heading font-bold text-foreground">
+              Preferences
+            </h2>
+            <p className="text-sm font-body text-muted-foreground">
+              Customize your dining experience
+            </p>
           </div>
         </div>
         {hasChanges && (
@@ -144,10 +181,15 @@ const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, on
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {dietaryOptions.map((option) => (
-              <div key={option.id} className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors duration-200">
+              <div
+                key={option.id}
+                className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors duration-200"
+              >
                 <Checkbox
                   checked={localPreferences.dietary.includes(option.id)}
-                  onChange={(e) => handleDietaryChange(option.id, e.target.checked)}
+                  onChange={(e) =>
+                    handleDietaryChange(option.id, e.target.checked)
+                  }
                   className="mt-1"
                 />
                 <div className="flex-1">
@@ -176,11 +218,16 @@ const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, on
                 onClick={() => handleSpiceLevelChange(level.value)}
                 className={`p-3 rounded-lg border text-left transition-all duration-200 hover:shadow-warm-sm ${
                   localPreferences.spiceLevel === level.value
-                    ? 'border-primary bg-primary/10 text-primary' :'border-border bg-background text-foreground hover:border-primary/50'
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-background text-foreground hover:border-primary/50"
                 }`}
               >
-                <div className="text-sm font-body font-medium mb-1">{level.label}</div>
-                <div className="text-xs font-body text-muted-foreground">{level.description}</div>
+                <div className="text-sm font-body font-medium mb-1">
+                  {level.label}
+                </div>
+                <div className="text-xs font-body text-muted-foreground">
+                  {level.description}
+                </div>
               </button>
             ))}
           </div>
@@ -194,10 +241,19 @@ const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, on
           </h3>
           <div className="space-y-3">
             {notificationOptions.map((option) => (
-              <div key={option.id} className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors duration-200">
+              <div
+                key={option.id}
+                className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors duration-200"
+              >
                 <Checkbox
-                  checked={localPreferences.notifications[option.id as keyof typeof localPreferences.notifications] || false}
-                  onChange={(e) => handleNotificationChange(option.id, e.target.checked)}
+                  checked={
+                    localPreferences.notifications[
+                      option.id as keyof typeof localPreferences.notifications
+                    ] || false
+                  }
+                  onChange={(e) =>
+                    handleNotificationChange(option.id, e.target.checked)
+                  }
                   className="mt-1"
                 />
                 <div className="flex-1">
@@ -211,55 +267,6 @@ const PreferencesSection: React.FC<PreferencesSectionProps> = ({ preferences, on
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Favorite Items */}
-        <div>
-          <h3 className="text-lg font-body font-medium text-foreground mb-4 flex items-center space-x-2">
-            <Icon name="Heart" size={20} className="text-primary" />
-            <span>Favorite Items</span>
-          </h3>
-          {localPreferences.favoriteItems && localPreferences.favoriteItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {localPreferences.favoriteItems.map((item) => (
-                <div key={item.id} className="flex items-center space-x-3 p-3 rounded-lg border border-border bg-background">
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
-                    <Image
-                      src={item.image}
-                      alt={item.imageAlt}
-                      fill
-                      className="object-cover"
-                      sizes="48px"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-body font-medium text-foreground">{item.name}</h4>
-                    <p className="text-xs font-body text-muted-foreground">{item.category}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    iconName="X"
-                    onClick={() => {
-                      const updatedFavorites = localPreferences.favoriteItems.filter(fav => fav.id !== item.id);
-                      setLocalPreferences(prev => ({
-                        ...prev,
-                        favoriteItems: updatedFavorites
-                      }));
-                      setHasChanges(true);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 border border-border rounded-lg bg-muted/20">
-              <Icon name="Heart" size={32} className="text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm font-body text-muted-foreground">
-                No favorite items yet. Start exploring our menu to add favorites!
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

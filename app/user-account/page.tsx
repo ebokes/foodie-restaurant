@@ -12,12 +12,21 @@ import SecuritySection from "@/components/user-account/security-section";
 import PaymentMethodsSection from "@/components/user-account/payment-methods-section";
 import Icon, { type IconProps } from "@/components/ui/app-icon";
 import { Button } from "@/components/ui/button";
+import FavoritesSection from "@/components/user-account/favorites-section";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { updateUser, signOutUser } from "@/lib/store/slices/authSlice";
+import {
+  updateUser,
+  signOutUser,
+  toggleFavoriteItem,
+  FavoriteItem,
+} from "@/lib/store/slices/authSlice";
+import { addCartItem, addItem } from "@/lib/store/slices/cartSlice";
+import { MenuItem } from "@/types/menu-catalog";
 import { auth, db } from "@/lib/firebase/config";
 import { orderService } from "@/lib/firebase/orders";
 import { userService } from "@/lib/firebase/user";
 import { doc, setDoc } from "firebase/firestore";
+import { menuService } from "@/lib/firebase/menu";
 
 interface User {
   id: string;
@@ -68,14 +77,6 @@ interface Order {
   tax: number;
   items: OrderItem[];
   deliveryAddress: DeliveryAddress;
-}
-
-interface FavoriteItem {
-  id: string;
-  name: string;
-  category: string;
-  image: string;
-  imageAlt: string;
 }
 
 interface Preferences {
@@ -143,6 +144,7 @@ const UserAccount = () => {
     { id: "profile", label: "Profile", icon: "User" },
     { id: "addresses", label: "Addresses", icon: "MapPin" },
     { id: "orders", label: "Order History", icon: "Package" },
+    { id: "favorites", label: "Favorites", icon: "Heart" },
     { id: "preferences", label: "Preferences", icon: "Settings" },
     { id: "payment", label: "Payment", icon: "CreditCard" },
     { id: "security", label: "Security", icon: "Shield" },
@@ -211,8 +213,53 @@ const UserAccount = () => {
           prev ? { ...prev, totalOrders: convertedOrders.length } : null
         );
 
-        // Load preferences
-        const userPrefs = await userService.getPreferences(userId);
+        // Load preferences and sync with live menu data
+        const [userPrefs, menuItems] = await Promise.all([
+          userService.getPreferences(userId),
+          menuService.getMenuItems(),
+        ]);
+
+        const hydratedFavorites = (userPrefs.favoriteItems || []).map(
+          (favItem) => {
+            const liveItem = menuItems.find((m) => String(m.id) === favItem.id);
+            if (liveItem) {
+              return {
+                id: favItem.id,
+                name: liveItem.name,
+                category: liveItem.category,
+                image: liveItem.image,
+                imageAlt: liveItem.imageAlt,
+                price: liveItem.price,
+                description: liveItem.description,
+                originalPrice: liveItem.originalPrice,
+                subtitle: liveItem.subtitle,
+                dietary: liveItem.dietary,
+                tags: liveItem.tags,
+                rating: liveItem.rating,
+                reviewCount: liveItem.reviewCount,
+                prepTime: liveItem.prepTime,
+              };
+            }
+            // Fallback to stored data if item removed from menu or not found
+            return {
+              id: favItem.id,
+              name: favItem.name,
+              category: favItem.category,
+              image: favItem.image,
+              imageAlt: favItem.imageAlt,
+              price: favItem.price || 0,
+              description: favItem.description || "",
+              originalPrice: favItem.originalPrice,
+              subtitle: favItem.subtitle,
+              dietary: favItem.dietary,
+              tags: favItem.tags,
+              rating: favItem.rating,
+              reviewCount: favItem.reviewCount,
+              prepTime: favItem.prepTime,
+            };
+          }
+        );
+
         setPreferences({
           dietary: userPrefs.dietary || [],
           spiceLevel: userPrefs.spiceLevel || "medium",
@@ -224,7 +271,7 @@ const UserAccount = () => {
             smsNotifications:
               userPrefs.notifications?.smsNotifications ?? false,
           },
-          favoriteItems: userPrefs.favoriteItems || [],
+          favoriteItems: hydratedFavorites,
         });
 
         // Update favoriteItems count
@@ -366,29 +413,34 @@ const UserAccount = () => {
   ): Promise<void> => {
     if (!auth.currentUser) return;
 
-    setPreferences(updatedPreferences);
+    // Merge with existing preferences to ensure we don't lose data (like favorites) if child sends partial update
+    const newPreferences = { ...preferences, ...updatedPreferences };
+    setPreferences(newPreferences);
 
     // Save to Firebase
     try {
-      await userService.updatePreferences(auth.currentUser.uid, {
-        dietary: updatedPreferences.dietary,
-        spiceLevel: updatedPreferences.spiceLevel,
-        notifications: updatedPreferences.notifications,
-        favoriteItems: updatedPreferences.favoriteItems,
-      });
-      dispatch(updateUser({ preferences: updatedPreferences }));
+      if (auth.currentUser) {
+        await userService.updatePreferences(auth.currentUser.uid, {
+          dietary: newPreferences.dietary,
+          spiceLevel: newPreferences.spiceLevel,
+          notifications: newPreferences.notifications,
+          favoriteItems: newPreferences.favoriteItems,
+        });
+        dispatch(updateUser({ preferences: newPreferences }));
 
-      // Update favoriteItems count
-      setUser((prev) =>
-        prev
-          ? {
-              ...prev,
-              favoriteItems: updatedPreferences.favoriteItems?.length || 0,
-            }
-          : null
-      );
+        // Update favoriteItems count
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                favoriteItems: newPreferences.favoriteItems?.length || 0,
+              }
+            : null
+        );
+      }
     } catch (error) {
       toast.error("Failed to update preferences");
+      // Optional: Revert local state on error
     }
   };
 
@@ -497,6 +549,68 @@ const UserAccount = () => {
     }
   };
 
+  // Favorites handlers
+  const handleRemoveFavorite = async (item: MenuItem) => {
+    if (!auth.currentUser) return;
+    try {
+      // Create a minimal FavoriteItem since we are just removing by ID
+      const favItem: FavoriteItem = {
+        id: String(item.id),
+        name: item.name,
+        category: item.category,
+        image: item.image,
+        imageAlt: item.imageAlt,
+        price: item.price,
+        description: item.description,
+      };
+      await dispatch(
+        toggleFavoriteItem({ userId: auth.currentUser.uid, item: favItem })
+      ).unwrap();
+
+      // Update local preferences to reflect removal immediately
+      const newFavs = preferences.favoriteItems.filter(
+        (f) => f.id !== String(item.id)
+      );
+      setPreferences((prev) => ({ ...prev, favoriteItems: newFavs }));
+      setUser((prev) =>
+        prev ? { ...prev, favoriteItems: newFavs.length } : null
+      );
+
+      toast.success("Removed from favorites");
+    } catch (error) {
+      toast.error("Failed to remove favorite");
+    }
+  };
+
+  const handleFavoritesAddToCart = async (item: MenuItem) => {
+    try {
+      const cartItem = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        image: item.image,
+        imageAlt: item.imageAlt,
+        customizations: [],
+        specialRequests: null,
+      };
+
+      if (auth.currentUser) {
+        await dispatch(
+          addCartItem({
+            userId: auth.currentUser.uid,
+            item: cartItem,
+          })
+        ).unwrap();
+      } else {
+        dispatch(addItem(cartItem));
+      }
+      toast.success(`Added ${item.name} to cart`);
+    } catch (error) {
+      toast.error("Failed to add to cart");
+    }
+  };
+
   const renderTabContent = (): React.ReactNode => {
     if (!user) {
       return null;
@@ -524,6 +638,24 @@ const UserAccount = () => {
             orders={orders}
             onReorder={handleReorder}
             onViewDetails={handleViewOrderDetails}
+          />
+        );
+
+      case "orders":
+        return (
+          <OrderHistorySection
+            orders={orders}
+            onReorder={handleReorder}
+            onViewDetails={handleViewOrderDetails}
+          />
+        );
+
+      case "favorites":
+        return (
+          <FavoritesSection
+            favoriteItems={preferences.favoriteItems || []}
+            onRemoveFavorite={handleRemoveFavorite}
+            onAddToCart={handleFavoritesAddToCart}
           />
         );
 

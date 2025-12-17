@@ -3,6 +3,9 @@ import MenuItemCard from "./menu-item-card";
 import Icon from "../ui/app-icon";
 import { MenuItem, Filters } from "@/types/menu-catalog";
 import { motion, AnimatePresence, Variants } from "motion/react";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { toggleFavoriteItem, FavoriteItem } from "@/lib/store/slices/authSlice";
+import { toast } from "sonner";
 
 interface MenuGridProps {
   items: MenuItem[];
@@ -21,7 +24,54 @@ const MenuGrid = ({
   filters,
   className = "",
 }: MenuGridProps) => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const [displayCount, setDisplayCount] = useState<number>(12);
+
+  // Helper to check if item is favorite
+  const isFavorite = (itemId: number | string) => {
+    return (
+      user?.preferences?.favoriteItems?.some(
+        (item) => item.id === String(itemId)
+      ) ?? false
+    );
+  };
+
+  const handleToggleFavorite = async (item: MenuItem) => {
+    if (!user) {
+      toast.error("Please sign in to save favorites");
+      return;
+    }
+
+    const favoriteItem: FavoriteItem = {
+      id: String(item.id),
+      name: item.name,
+      category: item.category,
+      image: item.image,
+      imageAlt: item.imageAlt,
+      price: item.price,
+      description: item.description,
+      originalPrice: item.originalPrice,
+      subtitle: item.subtitle,
+      dietary: item.dietary,
+      tags: item.tags,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      prepTime: item.prepTime,
+    };
+
+    try {
+      await dispatch(
+        toggleFavoriteItem({ userId: String(user.id), item: favoriteItem })
+      ).unwrap();
+      const wasFavorite = isFavorite(item.id);
+      toast.success(
+        wasFavorite ? "Removed from favorites" : "Added to favorites"
+      );
+    } catch (error) {
+      toast.error("Failed to update favorites");
+    }
+  };
 
   // Create a key based on filters to reset display count when filters change
   const filterKey = useMemo(() => {
@@ -218,7 +268,12 @@ const MenuGrid = ({
               animate="visible"
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <MenuItemCard item={item} onAddToCart={onAddToCart} />
+              <MenuItemCard
+                item={item}
+                onAddToCart={onAddToCart}
+                isFavorite={isFavorite(item.id)}
+                onToggleFavorite={handleToggleFavorite}
+              />
             </motion.div>
           ))}
         </AnimatePresence>
