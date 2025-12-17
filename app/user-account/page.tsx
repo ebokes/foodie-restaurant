@@ -409,12 +409,16 @@ const UserAccount = () => {
 
   // Preferences handlers
   const handleUpdatePreferences = async (
-    updatedPreferences: Preferences
+    updatedPreferences: Omit<Preferences, "favoriteItems">
   ): Promise<void> => {
     if (!auth.currentUser) return;
 
     // Merge with existing preferences to ensure we don't lose data (like favorites) if child sends partial update
-    const newPreferences = { ...preferences, ...updatedPreferences };
+    const newPreferences: Preferences = {
+      ...preferences,
+      ...updatedPreferences,
+      favoriteItems: preferences.favoriteItems, // Explicitly preserve favorites
+    };
     setPreferences(newPreferences);
 
     // Save to Firebase
