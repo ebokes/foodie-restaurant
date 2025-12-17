@@ -252,3 +252,78 @@ export const features = [
           "Hands carefully plating a gourmet dish with artistic presentation",
       },
 ];
+
+export const restaurants = [
+    {
+      id: "downtown",
+      name: "Foodies Downtown",
+      address: "123 Main Street, Downtown District",
+      hours: "Mon-Sun: 11:00 AM - 10:00 PM",
+      capacity: 120,
+      image: "https://images.unsplash.com/photo-1672870634122-6ea7b16d2bb4",
+      imageAlt:
+        "Modern restaurant interior with warm lighting and elegant table settings",
+      phone: "(555) 123-4567",
+      features: ["Valet Parking", "Wine Bar", "Private Dining"],
+    },
+    {
+      id: "waterfront",
+      name: "Foodies Waterfront",
+      address: "456 Harbor View, Marina District",
+      hours: "Mon-Sun: 5:00 PM - 11:00 PM",
+      capacity: 80,
+      image: "https://images.unsplash.com/photo-1542066681-3129a81d8cab",
+      imageAlt:
+        "Elegant waterfront restaurant with floor-to-ceiling windows overlooking harbor",
+      phone: "(555) 123-4568",
+      features: ["Ocean View", "Outdoor Seating", "Live Music"],
+    },
+    {
+      id: "garden",
+      name: "Foodies Garden",
+      address: "789 Green Valley Road, Garden District",
+      hours: "Tue-Sun: 12:00 PM - 9:00 PM",
+      capacity: 60,
+      image: "https://images.unsplash.com/photo-1507447204628-759dc3244a96",
+      imageAlt:
+        "Charming garden restaurant with outdoor terrace surrounded by lush greenery",
+      phone: "(555) 123-4569",
+      features: ["Garden Terrace", "Farm-to-Table", "Pet Friendly"],
+    },
+    {
+      id: "rooftop",
+      name: "Foodies Rooftop",
+      address: "321 Sky Tower, Uptown District",
+      hours: "Wed-Sun: 4:00 PM - 12:00 AM",
+      capacity: 95,
+      image: "https://images.unsplash.com/photo-1730644285465-1ea941bc5f27",
+      imageAlt:
+        "Stunning rooftop restaurant with city skyline views and modern outdoor dining setup",
+      phone: "(555) 123-4570",
+      features: ["City Views", "Rooftop Bar", "Late Night Dining"],
+    },
+    {
+      id: "suburban",
+      name: "Foodies Suburban",
+      address: "654 Oak Hills Boulevard, Westside",
+      hours: "Mon-Sun: 10:00 AM - 9:00 PM",
+      capacity: 140,
+      image: "https://images.unsplash.com/photo-1673993446533-2e1429bf42dc",
+      imageAlt:
+        "Spacious suburban restaurant with family-friendly atmosphere and comfortable booth seating",
+      phone: "(555) 123-4571",
+      features: ["Family Friendly", "Large Groups", "Playground"],
+    },
+    {
+      id: "historic",
+      name: "Foodies Historic",
+      address: "987 Heritage Square, Old Town",
+      hours: "Tue-Sat: 5:00 PM - 10:00 PM",
+      capacity: 50,
+      image: "https://images.unsplash.com/photo-1640618675149-23fc9c5ff85a",
+      imageAlt:
+        "Intimate historic restaurant in restored brick building with vintage decor and cozy ambiance",
+      phone: "(555) 123-4572",
+      features: ["Historic Building", "Intimate Setting", "Fine Dining"],
+    },
+  ];

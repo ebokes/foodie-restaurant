@@ -25,8 +25,7 @@ const Hero = () => {
       <div className="max-w-3xl mx-auto z-40 relative text-center py-32 px-4 sm:px-6 lg:px-8">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-5xl sm:text-6xl lg:text-8xl font-heading font-bold text-white leading-tight mb-8 drop-shadow-2xl"
         >
@@ -37,8 +36,7 @@ const Hero = () => {
 
         <motion.p
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-2xl sm:text-3xl lg:text-4xl text-white font-semibold mb-4 drop-shadow-lg"
         >
@@ -47,8 +45,7 @@ const Hero = () => {
 
         <motion.p
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-xl sm:text-2xl text-orange-100 font-medium mb-6 drop-shadow-md"
         >
@@ -62,8 +59,7 @@ const Hero = () => {
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-wrap justify-center gap-4 text-lg sm:text-xl text-white"
         >
@@ -77,8 +73,7 @@ const Hero = () => {
 
         <motion.p
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-lg text-orange-200 mt-4 font-medium"
         >
@@ -88,8 +83,7 @@ const Hero = () => {
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex flex-col sm:flex-row gap-6 justify-center mt-16"
         >

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 
 import FooterSection from "@/components/footer/footer";
 import { categories } from "@/lib/constants";
@@ -118,13 +117,7 @@ const MenuCatalog = () => {
       <main className="">
         {/* Hero Section */}
         <section className="bg-linear-to-br from-primary-solid via-grad1 to-grad2 text-primary-foreground py-6 lg:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-          >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-2xl lg:text-4xl font-heading font-bold mb-3">
                 Our Menu
@@ -135,18 +128,12 @@ const MenuCatalog = () => {
                 story of flavor and passion.
               </p>
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* Menu Content */}
         <section className="py-8 lg:py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-          >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-8">
               {/* Unified Browse by Category with Filters & Sort */}
               <BrowseByCategoryWithFilters
@@ -165,18 +152,12 @@ const MenuCatalog = () => {
                 filters={filters}
               />
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* Call to Action Section */}
         <section className="bg-muted py-12 lg:py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-          >
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="bg-card rounded-2xl p-8 lg:p-12 shadow-warm">
               <div className="w-16 h-16 bg-linear-to-br from-primary-solid via-grad1 to-grad2 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icon name="Phone" size={24} color="white" />
@@ -206,7 +187,7 @@ const MenuCatalog = () => {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </section>
       </main>
       <FooterSection />
