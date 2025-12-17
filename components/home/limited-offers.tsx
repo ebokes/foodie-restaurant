@@ -43,7 +43,7 @@ const LimitedOffers = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative bg-card rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-xl transition-all duration-300"
+              className="group relative bg-card rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-xl transition-shadow duration-300"
             >
               {deal?.isNew && (
                 <div className="absolute top-4 left-4 z-20">

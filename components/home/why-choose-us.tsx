@@ -42,7 +42,7 @@ const WhyChooseUsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group bg-card rounded-2xl p-6 shadow-warm transition-all duration-300 text-center hover:-translate-y-2 hover:shadow-warm-lg"
+              className="group bg-card rounded-2xl p-6 shadow-warm transition-shadow duration-300 text-center hover:-translate-y-2 hover:shadow-warm-lg"
             >
               {/* Icon */}
               <div className="relative mb-6">
